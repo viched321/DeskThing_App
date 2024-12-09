@@ -7,6 +7,7 @@ from spotipy.oauth2 import SpotifyOAuth
 import config
 import numpy as np
 from pathlib import Path
+import json
 
 
 
@@ -14,11 +15,25 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=config.CLIENT_ID,
                                                client_secret=config.CLIENT_SECRET,
                                                redirect_uri=config.REDIRECT_URI,
                                                scope=config.SCOPE))
+user_settings = {
+    "background": 1,
 
 
+}
+def save_settings():
+    with open("settings.json","w") as infile:
+        json.dump(user_settings, infile)
+
+latest_song_name = ""
 # Replace with the actual playlist ID
 playlist_id = None #'7x5hAkfr7lmHPc41jbq1FC' 
 base_folder = Path(r"ButtonImages")
+
+
+if (playlist_id):
+    playlist = sp.playlist(playlist_id)
+    playlist_image_url = playlist['images'][0]['url']  # Assuming the first image in the list is the one you want
+    print("Playlist Image URL:", playlist_image_url)
 
 
 # Funktion för att ladda och ändra storlek på en bild
@@ -26,8 +41,9 @@ def load_and_resize_image(image_name, size):
     image_path = base_folder / image_name
     return Image.open(image_path).resize(size)
 
+latest_song_name = ""
 #Background prefrence
-background_prefrence= 1 #shoose[1,2,3]
+background_prefrence= user_settings["background"]
 Background_cover_brightness_scaling = 0.5
 lable_mean_color = "#000000"  # Default black
 #background settings scaling
@@ -60,7 +76,6 @@ background_cover_art_size: tuple = (900,900)
 background_cover_art_label = ctk.CTkLabel(window, text="", fg_color="transparent", corner_radius=background_cover_art_bevel, width=background_cover_art_size[0], height=background_cover_art_size[1])
 background_cover_art_label.place(x=-100, y=-100)
 
-
 cover_art_bevel: int = 10
 cover_art_size: tuple = (250,250)
 cover_art_label = ctk.CTkLabel(window, text="", fg_color="transparent", corner_radius=cover_art_bevel, width=cover_art_size[0], height=cover_art_size[1])
@@ -75,7 +90,8 @@ artist_label.place(x=320, y=120)
 song_time_played = ctk.CTkLabel(window, text="",font=("Arial",10,"bold"),text_color="white",anchor="w")
 song_time_played.place(x=307, y=220)
 
-
+save_settings_button = ctk.CTkButton(window,text="Save settings",font=("Arial",10),text_color="White",anchor="w",command=save_settings,corner_radius=25,width=button_size[0],height=button_size[1])
+save_settings_button.place(x=600,y=350)
 
 def slider_changed(value):
     sp.seek_track(int(value)) 
@@ -177,12 +193,6 @@ def get_mean_color_from_image(image, brightness_factor=1, red_factor=1, green_fa
 
 
 
-current_playback = sp.current_playback()
-is_playing = current_playback['is_playing']
-print("Current playback:", current_playback)
-
-
-
 
 progress_bar_slider = ctk.CTkSlider(window, progress_color="white",
                                     button_corner_radius=20,button_length=0,
@@ -208,12 +218,8 @@ button_add_image = load_and_resize_image("add_image.png", addbutton_size)
 button_next_image = ctk.CTkImage(light_image=button_next_image, size=button_size)
 button_last_image = ctk.CTkImage(light_image=button_last_image,size=button_size)
 button_add_image = ctk.CTkImage(light_image=button_add_image, size=addbutton_size)
-if is_playing:
-    playPauseSatus_img = ctk.CTkImage(light_image=button_pause_image,size=button_size)
-else:
-    playPauseSatus_img = ctk.CTkImage(light_image=button_start_image,size=button_size)
 
-
+playPauseStatus_img = ctk.CTkImage(light_image=button_pause_image, size=button_size)
 #buttons for next button pause/start and prev button
 next_song_touch = ctk.CTkButton(window,text="",image="",width=button_size[0],height=button_size[1],command=next_song,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
 next_song_touch.place(x=button_x+2*button_size[0]+2*button_offset, y=button_y)
@@ -246,7 +252,7 @@ def update_display():
     try:
         #fetch all information about artist/song
         current_playback = sp.current_playback()
-        current_playing_song = current_playback['is_playing']
+        currenty_playing = current_playback['is_playing']
         Current_playing_track = current_playback['item']
         current_playing_track_song_name = Current_playing_track['name']
         current_playing_artist = ", ".join([artist['name'] for artist in Current_playing_track['artists']])
@@ -254,6 +260,13 @@ def update_display():
         current_playing_album_art = current_song_info["album_art"]
         response = requests.get(current_playing_album_art_url)
         img_data = BytesIO(response.content)
+        
+
+        #assign the right icon for pause/play button
+        if currenty_playing:
+            playPauseStatus_img.configure(light_image=button_pause_image)
+        else:
+            playPauseStatus_img.configure(light_image=button_start_image)
 
         #get the averge color form album art
         if(current_playing_album_art):
@@ -265,6 +278,12 @@ def update_display():
                 lable_mean_color = rgb_to_hex(mean_color_center)
             elif(background_prefrence == 2):
                 pass
+        if current_playing_album_art:
+            mean_color_center = get_mean_color_from_center(current_playing_album_art)
+            lable_mean_color_center = rgb_to_hex(mean_color_center)
+        else:
+            mean_color_center = (255, 255, 255)  # Default to white
+            lable_mean_color_center = rgb_to_hex(mean_color_center)
 
         if current_playback:
 
@@ -274,39 +293,39 @@ def update_display():
                     add_song_touch.configure(image=button_add_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
                 next_song_touch.configure(image=button_next_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
                 last_song_touch.configure(image=button_last_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
-                pause_song_touch.configure(image=playPauseSatus_img, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
+                pause_song_touch.configure(image=playPauseStatus_img, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
+                    add_song_touch.configure(image=button_add_image, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
+                next_song_touch.configure(image=button_next_image, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
+                last_song_touch.configure(image=button_last_image, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
+                pause_song_touch.configure(image=playPauseStatus_img, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
             else:
                 if(playlist_id):
                     add_song_touch.configure(image=button_add_image)
                 next_song_touch.configure(image=button_next_image)
                 last_song_touch.configure(image=button_last_image)
-                pause_song_touch.configure(image=playPauseSatus_img)
-
-            #asign the right Picture for Pause and Start buttons
-            if current_playing_song:
-                playPauseSatus_img = ctk.CTkImage(light_image=button_pause_image,size=button_size)
-            else:
-                playPauseSatus_img = ctk.CTkImage(light_image=button_start_image,size=button_size)
+                pause_song_touch.configure(image=playPauseStatus_img)
             
             # Update current song info
             progress_ms = current_playback['progress_ms']
             duration_ms = Current_playing_track['duration_ms']
             
-            #vad händer här????, album_art sparar en bild och tar ut current song info?
+            #If song name is != current song name change album art to new album art
             if current_song_info["song_name"] != current_playing_track_song_name:
-                current_playing_album_art = Image.open(img_data).resize((400, 400))  # Resize to 300x300
+                current_playing_album_art = Image.open(img_data).resize((400, 400))
+                current_song_info["song_name"] = current_playing_track_song_name
                 current_song_info["album_art"] = current_playing_album_art
                 progress_bar_slider.configure(to=duration_ms)
+
 
             current_song_info.update({
                 "song_name": current_playing_track_song_name,
                 "artists": current_playing_artist,
-                "paused": not current_playing_song,
+                "paused": not currenty_playing,
             })
 
             progress = progress_ms if progress_ms and duration_ms else 0
             progress_bar_slider.set(progress)
-
+            
         if current_song_info["album_art"]:
             # Open and resize images
             background_album_art = Image.open(img_data).resize((400, 400))
@@ -351,6 +370,7 @@ def update_display():
             song_time_total.configure(text="")
             next_song_touch.configure(image="")
             last_song_touch.configure(image="")
+            pause_song_touch.configure(images="")
             if(playlist_id):
                 add_song_touch.configure(Image="")
             pause_song_touch.configure(image="")
