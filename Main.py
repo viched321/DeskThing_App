@@ -35,7 +35,7 @@ if (playlist_id):
     playlist_image_url = playlist['images'][0]['url']  # Assuming the first image in the list is the one you want
     print("Playlist Image URL:", playlist_image_url)
 
- 
+
 # Funktion för att ladda och ändra storlek på en bild
 def load_and_resize_image(image_name, size):
     image_path = base_folder / image_name
@@ -45,6 +45,13 @@ latest_song_name = ""
 #Background prefrence
 background_prefrence= user_settings["background"]
 Background_cover_brightness_scaling = 0.5
+lable_mean_color = "#000000"  # Default black
+#background settings scaling
+brightness_factor= 1
+red_factor= 1
+green_factor=1
+blue_factor=1
+
 #buttons
 button_size=((50,50))
 button_offset=50
@@ -61,7 +68,6 @@ ctk.set_default_color_theme("dark-blue")
 window = ctk.CTk()
 window.title("Spotify Now Playing")
 window.geometry("800x480")
-
 
 
 
@@ -141,7 +147,7 @@ def enhance_color_channels(color, red_factor=1.2, green_factor=1.2, blue_factor=
     b = int(max(0, min(255, b * blue_factor)))  # Adjust blue channel
     return (r, g, b)
 
-def get_mean_color_from_center(image, region_size=(100, 100), brightness_factor=0.4, red_factor=1.5, green_factor=1.2, blue_factor=1.5):
+def get_mean_color_from_center(image, region_size=(100, 100), brightness_factor=1, red_factor=1, green_factor=1, blue_factor=1):
     """Get the mean color from the center of the image and optionally darken it."""
     # Convert image to a NumPy array
     color_array = np.array(image)
@@ -169,6 +175,20 @@ def get_mean_color_from_center(image, region_size=(100, 100), brightness_factor=
     # Optionally enhance the color channels
     mean_color = enhance_color_channels(mean_color, red_factor, green_factor, blue_factor)
     
+    return tuple(mean_color)  # Return as tuple after brightness adjustment
+
+def get_mean_color_from_image(image, brightness_factor=1, red_factor=1, green_factor=1, blue_factor=1):
+    # Convert image to a NumPy array
+    color_array = np.array(image)
+    mean_color = color_array.mean(axis=(0,1))
+    mean_color = tuple(mean_color.astype(int))
+    window.configure(fg_color=rgb_to_hex(mean_color))
+
+    # Optionally adjust the brightness of the mean color
+    mean_color = adjust_brightness(mean_color, factor=brightness_factor)
+
+    # Optionally enhance the color channels
+    mean_color = enhance_color_channels(mean_color, red_factor, green_factor, blue_factor)
     return tuple(mean_color)  # Return as tuple after brightness adjustment
 
 
@@ -228,7 +248,7 @@ def rgb_to_hex(rgb):
 
 def update_display():
     """Fetch currently playing song info and update the display."""
-    global current_song_info, playPauseStatus_img, mean_color_center
+    global current_song_info, playPauseSatus_img, mean_color_center, lable_mean_color
     try:
         #fetch all information about artist/song
         current_playback = sp.current_playback()
@@ -249,6 +269,15 @@ def update_display():
             playPauseStatus_img.configure(light_image=button_start_image)
 
         #get the averge color form album art
+        if(current_playing_album_art):
+            if (background_prefrence == 1):
+                mean_color_center = get_mean_color_from_image(current_playing_album_art,brightness_factor,red_factor,green_factor,blue_factor)
+                lable_mean_color = rgb_to_hex(mean_color_center)
+            elif(background_prefrence == 2):
+                mean_color_center = get_mean_color_from_center(current_playing_album_art,brightness_factor,red_factor,green_factor,blue_factor)
+                lable_mean_color = rgb_to_hex(mean_color_center)
+            elif(background_prefrence == 2):
+                pass
         if current_playing_album_art:
             mean_color_center = get_mean_color_from_center(current_playing_album_art)
             lable_mean_color_center = rgb_to_hex(mean_color_center)
@@ -258,18 +287,23 @@ def update_display():
 
         if current_playback:
 
-            if (background_prefrence):
+            if (background_prefrence == 1 or background_prefrence == 2):
+                #sheck if there is any playlists connected to DeskThing_App
                 if(playlist_id):
+                    add_song_touch.configure(image=button_add_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
+                next_song_touch.configure(image=button_next_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
+                last_song_touch.configure(image=button_last_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
+                pause_song_touch.configure(image=playPauseStatus_img, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
                     add_song_touch.configure(image=button_add_image, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
                 next_song_touch.configure(image=button_next_image, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
                 last_song_touch.configure(image=button_last_image, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
                 pause_song_touch.configure(image=playPauseStatus_img, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
             else:
                 if(playlist_id):
-                    add_song_touch.configure(image=button_add_image, hover_color="None")
-                next_song_touch.configure(image=button_next_image, hover_color="None")
-                last_song_touch.configure(image=button_last_image, hover_color="None")
-                pause_song_touch.configure(image=playPauseStatus_img, hover_color="None")  
+                    add_song_touch.configure(image=button_add_image)
+                next_song_touch.configure(image=button_next_image)
+                last_song_touch.configure(image=button_last_image)
+                pause_song_touch.configure(image=playPauseStatus_img)
             
             # Update current song info
             progress_ms = current_playback['progress_ms']
@@ -307,19 +341,20 @@ def update_display():
             
 
             cover_art_label.configure(image=album_image)
-            if background_prefrence:
-                window.configure(fg_color=rgb_to_hex(mean_color_center))
-            else:
+            if (background_prefrence == 1):
+                window.configure(fg_color= lable_mean_color)
+            elif(background_prefrence == 2):
+                window.configure(fg_color= lable_mean_color)
+            elif(background_prefrence == 3):
                 #set_album_art_as_image(window, album_art_url)
-                print("else")
                 background_cover_art_label.configure(image=background_album_image)
 
             #sheck what color the buttons should be
-            if background_prefrence:
-                song_label.configure(text=f"{current_song_info['song_name']}", fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
-                artist_label.configure(text=f"{current_song_info['artists']}", fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
-                song_time_played.configure(text=f"{progress_ms//60000}:{int((progress_ms%60000)/1000):02}", fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
-                song_time_total.configure(text=f"{duration_ms//60000}:{int((duration_ms%60000)/1000):02}", fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
+            if (background_prefrence == 1 or background_prefrence == 2):
+                song_label.configure(text=f"{current_song_info['song_name']}", fg_color=lable_mean_color,bg_color=lable_mean_color)
+                artist_label.configure(text=f"{current_song_info['artists']}", fg_color=lable_mean_color,bg_color=lable_mean_color)
+                song_time_played.configure(text=f"{progress_ms//60000}:{int((progress_ms%60000)/1000):02}", fg_color=lable_mean_color,bg_color=lable_mean_color)
+                song_time_total.configure(text=f"{duration_ms//60000}:{int((duration_ms%60000)/1000):02}", fg_color=lable_mean_color,bg_color=lable_mean_color)
             else:
                 song_label.configure(text=f"{current_song_info['song_name']}")
                 artist_label.configure(text=f"{current_song_info['artists']}")
