@@ -31,7 +31,7 @@ class SpotifyController:
             self.sp.pause_playback()
         else:
             self.sp.start_playback()
-
+#Fix inte klart
     def add_song_to_playlist(self):
         current_playback = self.get_current_playback()
         if not current_playback or not current_playback["item"]:
@@ -63,6 +63,7 @@ class AppSettings:
     def save_settings(self):
         with open(self.settings_file,"w") as file:
             json.dump(self.settings, file)
+            
 class SpotifyAppGUI:
     def __init__(self,spotify_controller,app_settings):
         self.sp = spotify_controller
@@ -124,11 +125,12 @@ class SpotifyAppGUI:
     def update_display(self):
         try:
             current_playback = self.sp.get_current_playback()
+            #Always when song running
             if current_playback:
-
                 song_name = current_playback["item"]["name"]
                 artists = ", ".join(artist["name"] for artist in current_playback["item"]["artists"])
 
+                #Only when song changes
                 if song_name != self.current_song_info["song_name"]:
                     album_art_url = current_playback["item"]["album"]["images"][0]["url"]
                     response = requests.get(album_art_url)
@@ -141,20 +143,20 @@ class SpotifyAppGUI:
                     enhancer = ImageEnhance.Brightness(background_album_art)
                     background_album_art_darker = enhancer.enhance(0.5)
                     background_album_image = ctk.CTkImage(background_album_art_darker, size=self.background_cover_art_size)
+                    self.song_label.configure(text=song_name)
+                    self.artist_label.configure(text=artists)
+                    self.cover_art_label.configure(image=self.current_song_info["album_art"])
                 
                 progress_ms = current_playback['progress_ms']
                 self.song_time_played.configure(text=f"{progress_ms//60000}:{int((progress_ms%60000)/1000):02}")
                 self.progress_bar_slider.set(progress_ms)
-                self.song_label.configure(text=song_name)
-                self.artist_label.configure(text=artists)
-                self.cover_art_label.configure(image=self.current_song_info["album_art"])
             else:
                 self.song_label.configure(text="No song playing.")
                 self.artist_label.configure(text="")
         except Exception as e:
             print(f"Error updating display: {e}")
 
-        self.window.after(1000, self.update_display)
+        self.window.after(200, self.update_display)
 
     def run(self):
         self.update_display()
