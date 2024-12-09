@@ -15,33 +15,31 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=config.CLIENT_ID,
                                                client_secret=config.CLIENT_SECRET,
                                                redirect_uri=config.REDIRECT_URI,
                                                scope=config.SCOPE))
-user_settings = {
-    "background": 1,
 
 
-}
-def save_settings():
-    with open("settings.json","w") as infile:
-        json.dump(user_settings, infile)
-
-latest_song_name = ""
 # Replace with the actual playlist ID
 playlist_id = None #'7x5hAkfr7lmHPc41jbq1FC' 
 base_folder = Path(r"ButtonImages")
 
+def save_settings():
+    with open("settings.json","w") as outfile:
+        json.dump(user_settings, outfile)
 
+def setup(): 
+    global user_settings
+    with open("settings.json","r") as openfile:
+        user_settings = json.load(openfile)
 if (playlist_id):
     playlist = sp.playlist(playlist_id)
     playlist_image_url = playlist['images'][0]['url']  # Assuming the first image in the list is the one you want
     print("Playlist Image URL:", playlist_image_url)
 
-
+setup()
 # Funktion för att ladda och ändra storlek på en bild
 def load_and_resize_image(image_name, size):
     image_path = base_folder / image_name
     return Image.open(image_path).resize(size)
 
-latest_song_name = ""
 #Background prefrence
 background_prefrence= user_settings["background"]
 Background_cover_brightness_scaling = 0.5
@@ -57,6 +55,7 @@ button_size=((50,50))
 button_offset=50
 button_y = 370
 button_x = 250
+button_bevel = 25
 
 addbutton_size=((20,20))
 add_button_x = 670
@@ -69,7 +68,7 @@ window = ctk.CTk()
 window.title("Spotify Now Playing")
 window.geometry("800x480")
 
-
+        
 
 background_cover_art_bevel: int = 10
 background_cover_art_size: tuple = (900,900)
@@ -90,7 +89,7 @@ artist_label.place(x=320, y=120)
 song_time_played = ctk.CTkLabel(window, text="",font=("Arial",10,"bold"),text_color="white",anchor="w")
 song_time_played.place(x=307, y=220)
 
-save_settings_button = ctk.CTkButton(window,text="Save settings",font=("Arial",10),text_color="White",anchor="w",command=save_settings,corner_radius=25,width=button_size[0],height=button_size[1])
+save_settings_button = ctk.CTkButton(window,text="Save settings",font=("Arial",10),text_color="White",anchor="w",command=save_settings,corner_radius=25,width=1,height=button_size[1],fg_color="black")
 save_settings_button.place(x=600,y=350)
 
 def slider_changed(value):
@@ -182,13 +181,14 @@ def get_mean_color_from_image(image, brightness_factor=1, red_factor=1, green_fa
     color_array = np.array(image)
     mean_color = color_array.mean(axis=(0,1))
     mean_color = tuple(mean_color.astype(int))
-    window.configure(fg_color=rgb_to_hex(mean_color))
+
 
     # Optionally adjust the brightness of the mean color
     mean_color = adjust_brightness(mean_color, factor=brightness_factor)
 
     # Optionally enhance the color channels
     mean_color = enhance_color_channels(mean_color, red_factor, green_factor, blue_factor)
+    window.configure(fg_color=rgb_to_hex(mean_color))
     return tuple(mean_color)  # Return as tuple after brightness adjustment
 
 
@@ -248,7 +248,7 @@ def rgb_to_hex(rgb):
 
 def update_display():
     """Fetch currently playing song info and update the display."""
-    global current_song_info, playPauseSatus_img, mean_color_center, lable_mean_color
+    global current_song_info, playPauseStatus_img, mean_color_center, lable_mean_color
     try:
         #fetch all information about artist/song
         current_playback = sp.current_playback()
@@ -278,26 +278,14 @@ def update_display():
                 lable_mean_color = rgb_to_hex(mean_color_center)
             elif(background_prefrence == 2):
                 pass
-        if current_playing_album_art:
-            mean_color_center = get_mean_color_from_center(current_playing_album_art)
-            lable_mean_color_center = rgb_to_hex(mean_color_center)
-        else:
-            mean_color_center = (255, 255, 255)  # Default to white
-            lable_mean_color_center = rgb_to_hex(mean_color_center)
-
         if current_playback:
-
             if (background_prefrence == 1 or background_prefrence == 2):
-                #sheck if there is any playlists connected to DeskThing_App
-                if(playlist_id):
-                    add_song_touch.configure(image=button_add_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
-                next_song_touch.configure(image=button_next_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
-                last_song_touch.configure(image=button_last_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
-                pause_song_touch.configure(image=playPauseStatus_img, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
-                    add_song_touch.configure(image=button_add_image, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
-                next_song_touch.configure(image=button_next_image, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
-                last_song_touch.configure(image=button_last_image, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
-                pause_song_touch.configure(image=playPauseStatus_img, hover_color=lable_mean_color_center, fg_color=lable_mean_color_center,bg_color=lable_mean_color_center)
+                #check if there is any playlists connected to DeskThing_App
+                    if(playlist_id):
+                        add_song_touch.configure(image=button_add_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
+                    next_song_touch.configure(image=button_next_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
+                    last_song_touch.configure(image=button_last_image, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
+                    pause_song_touch.configure(image=playPauseStatus_img, hover_color=lable_mean_color, fg_color=lable_mean_color,bg_color=lable_mean_color)
             else:
                 if(playlist_id):
                     add_song_touch.configure(image=button_add_image)
@@ -349,7 +337,7 @@ def update_display():
                 #set_album_art_as_image(window, album_art_url)
                 background_cover_art_label.configure(image=background_album_image)
 
-            #sheck what color the buttons should be
+            #checkheck what color the buttons should be
             if (background_prefrence == 1 or background_prefrence == 2):
                 song_label.configure(text=f"{current_song_info['song_name']}", fg_color=lable_mean_color,bg_color=lable_mean_color)
                 artist_label.configure(text=f"{current_song_info['artists']}", fg_color=lable_mean_color,bg_color=lable_mean_color)
