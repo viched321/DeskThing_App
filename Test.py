@@ -125,7 +125,7 @@ class SpotifyAppGUI:
         self.sp = spotify_controller
         self.settings = app_settings
         self.base_folder = Path(r"ButtonImages")
-        self.current_song_info = {"album_art": self.load_and_resize_image(image_name="muu.jpg", size=(20,20)), "song_name": "", "artists": ""}
+        self.current_song_info = {"album_art": self.load_and_resize_image(image_name="add_image.png", size=(20,20)), "song_name": "", "artists": ""}
         self.root = ctk.CTk()
         self.root.title("Spunkify")
         self.root.geometry("800x480")
