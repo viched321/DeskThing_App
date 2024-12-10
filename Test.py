@@ -55,8 +55,6 @@ class AppSettings:
     def __init__(self, settings_file="settings.json"):
         self.settings_file = settings_file
         self.settings = self.load_settings()
-        print(self.settings)
-        print(type(self.settings))  # This tells you whether it's a dictionary or an instance of a class
 
     def load_settings(self):
         with open(self.settings_file,"r") as file:
@@ -73,9 +71,10 @@ class SpotifyAppGUI:
         self.settings = app_settings
         self.current_song_info = {"album_art": Image.new("RGB", (1, 1)), "song_name": "", "artists": ""}
         self.base_folder = Path(r"ButtonImages")
-        self.window = ctk.CTk()
+        self.root = ctk.CTk()
         self.setup_ui()
-       #Fails here
+          #Fails here
+        self.show_frame(self.window_player)
         self.user_specific_setup(app_settings.settings,self.current_song_info["album_art"])
         print("User-specific setup completed.")
 
@@ -85,46 +84,56 @@ class SpotifyAppGUI:
         return Image.open(image_path).resize(size)
 
     def setup_ui(self):
-        self.window.title("DeskThing is on")
-        self.window.geometry("800x480")
+        #Root setup
+        self.root.title("DeskThing is on")
+        self.root.geometry("800x480")
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("dark-blue")
 
+        #Frames setup
+        self.window_player = ctk.CTkFrame(self.root)
+        self.window_settings = ctk.CTkFrame(self.root)
+
+        for frame in (self.window_player,self.window_settings):
+            frame.place(x=0,y=0,relwidth=1,relheight=1)
+
         #Cover art label setup
         self.background_cover_art_size: tuple = (900,900)
-        self.background_cover_art_label = ctk.CTkLabel(self.window, text="", fg_color="transparent", corner_radius=0, width=self.background_cover_art_size[0], height=self.background_cover_art_size[1])
+        self.background_cover_art_label = ctk.CTkLabel(self.window_player, text="", fg_color="transparent", corner_radius=0, width=self.background_cover_art_size[0], height=self.background_cover_art_size[1])
         self.background_cover_art_label.place(x=-100, y=-100)
         
         self.cover_art_size: tuple = (250,250)
-        self.cover_art_label = ctk.CTkLabel(self.window, text="", fg_color="transparent", corner_radius=0, width=self.cover_art_size[0], height=self.cover_art_size[1])
+        self.cover_art_label = ctk.CTkLabel(self.window_player, text="", fg_color="transparent", corner_radius=0, width=self.cover_art_size[0], height=self.cover_art_size[1])
         self.cover_art_label.place(x=20, y=20)
+
         #Text label setup
-        self.song_label = ctk.CTkLabel(self.window, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w",bg_color="transparent")
+        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w",bg_color="transparent")
         self.song_label.place(x=320, y=60)
 
-        self.artist_label = ctk.CTkLabel(self.window, text="", font=("Arial", 20), text_color="white", anchor="w",bg_color="transparent")
+        self.artist_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 20), text_color="white", anchor="w",bg_color="transparent")
         self.artist_label.place(x=320, y=120)
 
-        self.song_time_played = ctk.CTkLabel(self.window, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent")
+        self.song_time_played = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent")
         self.song_time_played.place(x=307, y=220)
 
-        self.song_time_total = ctk.CTkLabel(self.window, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent")
+        self.song_time_total = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent")
         self.song_time_total.place(x=700, y=220)
 
         #Button setup
         self.button_size = ((50,50))
-        self.previous_track_button =ctk.CTkButton(self.window,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.previous_track, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.previous_track_button =ctk.CTkButton(self.window_player,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.previous_track, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.previous_track_button.place(x=250, y=370)
 
-        self.pause_or_play_button = ctk.CTkButton(self.window,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.pause_or_play,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.pause_or_play_button = ctk.CTkButton(self.window_player,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.pause_or_play,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.pause_or_play_button.place(x=350,y=370)
 
-        self.next_track_button = ctk.CTkButton(self.window,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.next_track,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.next_track_button = ctk.CTkButton(self.window_player,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.next_track,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.next_track_button.place(x=450, y=370)
 
         self.addbutton_size=((20,20))
+
         #Progress Slider setup
-        self. progress_bar_slider = ctk.CTkSlider(self.window, progress_color="white",
+        self. progress_bar_slider = ctk.CTkSlider(self.window_player, progress_color="white",
                                     button_corner_radius=20,button_length=0,
                                     button_color="white",button_hover_color="gray", 
                                     bg_color="transparent",height = 11, 
@@ -151,18 +160,20 @@ class SpotifyAppGUI:
 
         if app_settings["background"] == 1:
             mean_color = getting_mean_color.get_mean_color_from_center(image, 1)
-            self.window.configure(fg_color=mean_color)
+            self.window_player.configure(fg_color=mean_color)
         elif app_settings["background"] == 2:
             mean_color = getting_mean_color.get_mean_color_from_center(image, 2)
-            self.window.configure(fg_color=mean_color)
+            self.window_player.configure(fg_color=mean_color)
         elif app_settings["background"] == 3:
             self.background_cover_art_label.configure(image=self.background_album_image)
 
-
+    def show_frame(self,frame):
+        frame.tkraise()
 
     def update_display(self):
         try:
             current_playback = self.sp.get_current_playback()
+
             #Always when song running
             if current_playback:
                 song_name = current_playback["item"]["name"]
@@ -201,11 +212,12 @@ class SpotifyAppGUI:
         except Exception as e:
             print(f"Error updating display: {e}")
 
-        self.window.after(100, self.update_display)
+        self.window_player.after(100, self.update_display)
 
     def run(self):
         self.update_display()
-        self.window.mainloop()
+        self.window_player.mainloop()
+
 
 
 class Calculations:
