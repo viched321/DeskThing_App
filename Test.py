@@ -64,6 +64,62 @@ class AppSettings:
         with open(self.settings_file,"w") as file:
             json.dump(self.settings, file)  
         
+
+class Calculations:
+    def __init__(self):
+        self
+
+        
+
+    def rgb_to_hex(self,rgb):
+        return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
+    
+    def adjust_brightness(self,color, factor=1):
+        return tuple(max(0, min(255, int(c * factor))) for c in color)
+    def enhance_color_channels(color, red_factor=1.2, green_factor=1.2, blue_factor=1.2):
+
+        r, g, b = color
+        r = int(max(0, min(255, r * red_factor)))  # Adjust red channel
+        g = int(max(0, min(255, g * green_factor)))  # Adjust green channel
+        b = int(max(0, min(255, b * blue_factor)))  # Adjust blue channel
+        return (r, g, b)
+    
+    def get_mean_color_from_center(self, image, user_preference, brightness_factor=1, red_factor=1, green_factor=1, blue_factor=1):
+    
+    # Handle None or invalid images early
+        if image is None:
+            return (0, 0, 0)  # Return black color as a default
+    
+    # Convert image to a NumPy array
+        try:
+            color_array = np.array(image)
+        except Exception as e:
+            return (0, 0, 0)  # Default to black
+
+    # Proceed with the logic
+        if user_preference == 1:
+            region_size = (100, 100)
+            height, width, _ = color_array.shape
+            center_x, center_y = width // 2, height // 2
+
+            region_width, region_height = region_size
+            start_x = max(0, center_x - region_width // 2)
+            end_x = min(width, center_x + region_width // 2)
+            start_y = max(0, center_y - region_height // 2)
+            end_y = min(height, center_y + region_height // 2)
+
+            center_region = color_array[start_y:end_y, start_x:end_x]
+            mean_color = center_region.mean(axis=(0, 1))
+
+        elif user_preference == 2:
+            mean_color = color_array.mean(axis=(0, 1))
+    
+        mean_color = tuple(mean_color.astype(int))
+        mean_color = self.adjust_brightness(mean_color, factor=brightness_factor)
+        hex_mean_color = self.rgb_to_hex(mean_color)
+        return hex_mean_color
+
+
 class SpotifyAppGUI:
     def __init__(self,spotify_controller,app_settings):
         self
@@ -72,10 +128,19 @@ class SpotifyAppGUI:
         self.current_song_info = {"album_art": Image.new("RGB", (1, 1)), "song_name": "", "artists": ""}
         self.base_folder = Path(r"ButtonImages")
         self.root = ctk.CTk()
+        self.root.title("DeskThing is on")
+        self.root.geometry("800x480")
+        ctk.set_appearance_mode("dark")
+        ctk.set_default_color_theme("dark-blue")
+        #Frames setup
+        self.window_player = ctk.CTkFrame(self.root)
+        self.window_settings = ctk.CTkFrame(self.root)
+        for frame in (self.window_player,self.window_settings):
+            frame.place(x=0,y=0,relwidth=1,relheight=1)
         self.setup_ui()
           #Fails here
-        self.show_frame(self.window_player)
         self.user_specific_setup(app_settings.settings,self.current_song_info["album_art"])
+        self.show_frame(self.window_player)
         print("User-specific setup completed.")
 
 
@@ -84,19 +149,6 @@ class SpotifyAppGUI:
         return Image.open(image_path).resize(size)
 
     def setup_ui(self):
-        #Root setup
-        self.root.title("DeskThing is on")
-        self.root.geometry("800x480")
-        ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("dark-blue")
-
-        #Frames setup
-        self.window_player = ctk.CTkFrame(self.root)
-        self.window_settings = ctk.CTkFrame(self.root)
-
-        for frame in (self.window_player,self.window_settings):
-            frame.place(x=0,y=0,relwidth=1,relheight=1)
-
         #Cover art label setup
         self.background_cover_art_size: tuple = (900,900)
         self.background_cover_art_label = ctk.CTkLabel(self.window_player, text="", fg_color="transparent", corner_radius=0, width=self.background_cover_art_size[0], height=self.background_cover_art_size[1])
@@ -172,6 +224,7 @@ class SpotifyAppGUI:
 
     def update_display(self):
         try:
+            print("start")
             current_playback = self.sp.get_current_playback()
 
             #Always when song running
@@ -182,8 +235,12 @@ class SpotifyAppGUI:
                 self.next_track_button.configure(image=self.button_next_image)
                 if (current_playback['is_playing']):
                     self.pause_or_play_button.configure(image=self.button_pause_image)
+                    print("pause state")
+
                 else:
                     self.pause_or_play_button.configure(image=self.button_start_image)
+                    print("start state")
+
 
                 #Only when song changes
                 if song_name != self.current_song_info["song_name"]:
@@ -218,63 +275,8 @@ class SpotifyAppGUI:
         self.update_display()
         self.window_player.mainloop()
 
-
-
-class Calculations:
-    def __init__(self):
-        self
-
-        
-
-    def rgb_to_hex(self,rgb):
-        return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
-    
-    def adjust_brightness(self,color, factor=1):
-        return tuple(max(0, min(255, int(c * factor))) for c in color)
-    def enhance_color_channels(color, red_factor=1.2, green_factor=1.2, blue_factor=1.2):
-
-        r, g, b = color
-        r = int(max(0, min(255, r * red_factor)))  # Adjust red channel
-        g = int(max(0, min(255, g * green_factor)))  # Adjust green channel
-        b = int(max(0, min(255, b * blue_factor)))  # Adjust blue channel
-        return (r, g, b)
-    
-    def get_mean_color_from_center(self, image, user_preference, brightness_factor=1, red_factor=1, green_factor=1, blue_factor=1):
-    
-    # Handle None or invalid images early
-        if image is None:
-            return (0, 0, 0)  # Return black color as a default
-    
-    # Convert image to a NumPy array
-        try:
-            color_array = np.array(image)
-        except Exception as e:
-            return (0, 0, 0)  # Default to black
-
-    # Proceed with the logic
-        if user_preference == 1:
-            region_size = (100, 100)
-            height, width, _ = color_array.shape
-            center_x, center_y = width // 2, height // 2
-
-            region_width, region_height = region_size
-            start_x = max(0, center_x - region_width // 2)
-            end_x = min(width, center_x + region_width // 2)
-            start_y = max(0, center_y - region_height // 2)
-            end_y = min(height, center_y + region_height // 2)
-
-            center_region = color_array[start_y:end_y, start_x:end_x]
-            mean_color = center_region.mean(axis=(0, 1))
-
-        elif user_preference == 2:
-            mean_color = color_array.mean(axis=(0, 1))
-    
-        mean_color = tuple(mean_color.astype(int))
-        mean_color = self.adjust_brightness(mean_color, factor=brightness_factor)
-        hex_mean_color = self.rgb_to_hex(mean_color)
-        return hex_mean_color
-
 if __name__ == "__main__":
+    ctk.deactivate_automatic_dpi_awareness()
     spotify_controller = SpotifyController()
     app_settings = AppSettings()
     print(type(spotify_controller))  # Should be SpotifyController
@@ -283,4 +285,4 @@ if __name__ == "__main__":
     calculate = Calculations()
     app.run()
 
-    
+
