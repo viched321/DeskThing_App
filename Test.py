@@ -122,13 +122,12 @@ class Calculations:
 
 class SpotifyAppGUI:
     def __init__(self,spotify_controller,app_settings):
-        self
         self.sp = spotify_controller
         self.settings = app_settings
-        self.current_song_info = {"album_art": Image.new("RGB", (1, 1)), "song_name": "", "artists": ""}
         self.base_folder = Path(r"ButtonImages")
+        self.current_song_info = {"album_art": self.load_and_resize_image(image_name="muu.jpg", size=(20,20)), "song_name": "", "artists": ""}
         self.root = ctk.CTk()
-        self.root.title("DeskThing is on")
+        self.root.title("Spunkify")
         self.root.geometry("800x480")
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("dark-blue")
@@ -173,13 +172,13 @@ class SpotifyAppGUI:
 
         #Button setup
         self.button_size = ((50,50))
-        self.previous_track_button =ctk.CTkButton(self.window_player,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.previous_track, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.previous_track_button =ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.previous_track, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.previous_track_button.place(x=250, y=370)
 
-        self.pause_or_play_button = ctk.CTkButton(self.window_player,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.pause_or_play,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.pause_or_play_button = ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.pause_or_play,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.pause_or_play_button.place(x=350,y=370)
 
-        self.next_track_button = ctk.CTkButton(self.window_player,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.next_track,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.next_track_button = ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.next_track,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.next_track_button.place(x=450, y=370)
 
         self.addbutton_size=((20,20))
@@ -276,7 +275,7 @@ class SpotifyAppGUI:
         self.window_player.mainloop()
 
 if __name__ == "__main__":
-    ctk.deactivate_automatic_dpi_awareness()
+    #ctk.deactivate_automatic_dpi_awareness()
     spotify_controller = SpotifyController()
     app_settings = AppSettings()
     print(type(spotify_controller))  # Should be SpotifyController
@@ -284,5 +283,3 @@ if __name__ == "__main__":
     app = SpotifyAppGUI(spotify_controller, app_settings)
     calculate = Calculations()
     app.run()
-
-
