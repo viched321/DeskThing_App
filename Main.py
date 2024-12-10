@@ -316,11 +316,11 @@ def update_display():
             
         if current_song_info["album_art"]:
             # Open and resize images
-            background_album_art = Image.open(img_data).resize((400, 400))
+            
             current_playing_album_art = Image.open(img_data).resize((400, 400))
 
             # Darken the background image
-            enhancer = ImageEnhance.Brightness(background_album_art)
+            enhancer = ImageEnhance.Brightness(current_playing_album_art)
             background_album_art_darker = enhancer.enhance(Background_cover_brightness_scaling)  # 90% brightness
 
             # Create CTkImage objects

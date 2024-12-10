@@ -55,6 +55,8 @@ class AppSettings:
     def __init__(self, settings_file="settings.json"):
         self.settings_file = settings_file
         self.settings = self.load_settings()
+        print(self.settings)
+        print(type(self.settings))  # This tells you whether it's a dictionary or an instance of a class
 
     def load_settings(self):
         with open(self.settings_file,"r") as file:
@@ -62,16 +64,25 @@ class AppSettings:
     
     def save_settings(self):
         with open(self.settings_file,"w") as file:
-            json.dump(self.settings, file)
-            
+            json.dump(self.settings, file)  
+        
 class SpotifyAppGUI:
     def __init__(self,spotify_controller,app_settings):
+        self
         self.sp = spotify_controller
         self.settings = app_settings
+        self.current_song_info = {"album_art": Image.new("RGB", (1, 1)), "song_name": "", "artists": ""}
         self.base_folder = Path(r"ButtonImages")
         self.window = ctk.CTk()
         self.setup_ui()
-        self.current_song_info = {"album_art": None, "song_name": "", "artists": ""}
+       #Fails here
+        self.user_specific_setup(app_settings.settings,self.current_song_info["album_art"])
+        print("User-specific setup completed.")
+
+
+    def load_and_resize_image(self, image_name, size):
+        image_path = self.base_folder / image_name
+        return Image.open(image_path).resize(size)
 
     def setup_ui(self):
         self.window.title("DeskThing is on")
@@ -102,15 +113,16 @@ class SpotifyAppGUI:
 
         #Button setup
         self.button_size = ((50,50))
-        self.previous_song_button =ctk.CTkButton(self.window,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.previous_track, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
-        self.previous_song_button.place(x=250, y=370)
+        self.previous_track_button =ctk.CTkButton(self.window,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.previous_track, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.previous_track_button.place(x=250, y=370)
 
-        self.pause_song_touch = ctk.CTkButton(self.window,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.pause_or_play,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
-        self.pause_song_touch.place(x=350,y=370)
+        self.pause_or_play_button = ctk.CTkButton(self.window,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.pause_or_play,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.pause_or_play_button.place(x=350,y=370)
 
-        self.next_song_touch = ctk.CTkButton(self.window,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.next_track,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
-        self.next_song_touch.place(x=450, y=370)
+        self.next_track_button = ctk.CTkButton(self.window,text="",image="",width=self.button_size[0],height=self.button_size[1],command=self.sp.next_track,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.next_track_button.place(x=450, y=370)
 
+        self.addbutton_size=((20,20))
         #Progress Slider setup
         self. progress_bar_slider = ctk.CTkSlider(self.window, progress_color="white",
                                     button_corner_radius=20,button_length=0,
@@ -121,6 +133,32 @@ class SpotifyAppGUI:
                                     corner_radius=10,command=self.sp.slider_changed)
         self.progress_bar_slider.place(x=333, y=229)
 
+        #Button Images setup
+        self.button_last_image = self.load_and_resize_image("last_button_not_hover.png", self.button_size)
+        self.button_next_image = self.load_and_resize_image("skip_button_not_hover.png", self.button_size)
+        self.button_pause_image = self.load_and_resize_image("pause_not_hover.png", self.button_size)
+        self.button_start_image = self.load_and_resize_image("start_not_hover.png", self.button_size)
+        self.button_add_image = self.load_and_resize_image("add_image.png", self.addbutton_size)
+
+        self.button_next_image = ctk.CTkImage(light_image=self.button_next_image, size=self.button_size)
+        self.button_last_image = ctk.CTkImage(light_image=self.button_last_image,size=self.button_size)
+        self.button_add_image = ctk.CTkImage(light_image=self.button_add_image, size=self.addbutton_size)
+        self.button_start_image = ctk.CTkImage(light_image=self.button_start_image, size=self.button_size)
+        self.button_pause_image = ctk.CTkImage(light_image=self.button_pause_image, size=self.button_size)
+
+    def user_specific_setup(self, app_settings,image):
+        getting_mean_color = Calculations()
+
+        if app_settings["background"] == 1:
+            mean_color = getting_mean_color.get_mean_color_from_center(image, 1)
+            self.window.configure(fg_color=mean_color)
+        elif app_settings["background"] == 2:
+            mean_color = getting_mean_color.get_mean_color_from_center(image, 2)
+            self.window.configure(fg_color=mean_color)
+        elif app_settings["background"] == 3:
+            self.background_cover_art_label.configure(image=self.background_album_image)
+
+
 
     def update_display(self):
         try:
@@ -129,6 +167,12 @@ class SpotifyAppGUI:
             if current_playback:
                 song_name = current_playback["item"]["name"]
                 artists = ", ".join(artist["name"] for artist in current_playback["item"]["artists"])
+                self.previous_track_button.configure(image=self.button_last_image)
+                self.next_track_button.configure(image=self.button_next_image)
+                if (current_playback['is_playing']):
+                    self.pause_or_play_button.configure(image=self.button_pause_image)
+                else:
+                    self.pause_or_play_button.configure(image=self.button_start_image)
 
                 #Only when song changes
                 if song_name != self.current_song_info["song_name"]:
@@ -140,13 +184,14 @@ class SpotifyAppGUI:
                     duration_ms = current_playback["item"]['duration_ms']
                     self.progress_bar_slider.configure(to=duration_ms)
                     self.song_time_total.configure(text=f"{duration_ms//60000}:{int((duration_ms%60000)/1000):02}")
-                    enhancer = ImageEnhance.Brightness(background_album_art)
+                    enhancer = ImageEnhance.Brightness(album_art)
                     background_album_art_darker = enhancer.enhance(0.5)
-                    background_album_image = ctk.CTkImage(background_album_art_darker, size=self.background_cover_art_size)
-                    self.song_label.configure(text=song_name)
-                    self.artist_label.configure(text=artists)
-                    self.cover_art_label.configure(image=self.current_song_info["album_art"])
-                
+                    self.background_album_image = ctk.CTkImage(background_album_art_darker, size=self.background_cover_art_size)
+                    self.user_specific_setup(app_settings.settings,album_art)
+
+                self.song_label.configure(text=song_name)
+                self.artist_label.configure(text=artists)
+                self.cover_art_label.configure(image=self.current_song_info["album_art"])
                 progress_ms = current_playback['progress_ms']
                 self.song_time_played.configure(text=f"{progress_ms//60000}:{int((progress_ms%60000)/1000):02}")
                 self.progress_bar_slider.set(progress_ms)
@@ -156,16 +201,74 @@ class SpotifyAppGUI:
         except Exception as e:
             print(f"Error updating display: {e}")
 
-        self.window.after(200, self.update_display)
+        self.window.after(100, self.update_display)
 
     def run(self):
         self.update_display()
         self.window.mainloop()
 
+
+class Calculations:
+    def __init__(self):
+        self
+
+        
+
+    def rgb_to_hex(self,rgb):
+        return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
+    
+    def adjust_brightness(self,color, factor=1):
+        return tuple(max(0, min(255, int(c * factor))) for c in color)
+    def enhance_color_channels(color, red_factor=1.2, green_factor=1.2, blue_factor=1.2):
+
+        r, g, b = color
+        r = int(max(0, min(255, r * red_factor)))  # Adjust red channel
+        g = int(max(0, min(255, g * green_factor)))  # Adjust green channel
+        b = int(max(0, min(255, b * blue_factor)))  # Adjust blue channel
+        return (r, g, b)
+    
+    def get_mean_color_from_center(self, image, user_preference, brightness_factor=1, red_factor=1, green_factor=1, blue_factor=1):
+    
+    # Handle None or invalid images early
+        if image is None:
+            return (0, 0, 0)  # Return black color as a default
+    
+    # Convert image to a NumPy array
+        try:
+            color_array = np.array(image)
+        except Exception as e:
+            return (0, 0, 0)  # Default to black
+
+    # Proceed with the logic
+        if user_preference == 1:
+            region_size = (100, 100)
+            height, width, _ = color_array.shape
+            center_x, center_y = width // 2, height // 2
+
+            region_width, region_height = region_size
+            start_x = max(0, center_x - region_width // 2)
+            end_x = min(width, center_x + region_width // 2)
+            start_y = max(0, center_y - region_height // 2)
+            end_y = min(height, center_y + region_height // 2)
+
+            center_region = color_array[start_y:end_y, start_x:end_x]
+            mean_color = center_region.mean(axis=(0, 1))
+
+        elif user_preference == 2:
+            mean_color = color_array.mean(axis=(0, 1))
+    
+        mean_color = tuple(mean_color.astype(int))
+        mean_color = self.adjust_brightness(mean_color, factor=brightness_factor)
+        hex_mean_color = self.rgb_to_hex(mean_color)
+        return hex_mean_color
+
 if __name__ == "__main__":
     spotify_controller = SpotifyController()
     app_settings = AppSettings()
+    print(type(spotify_controller))  # Should be SpotifyController
+    print(type(app_settings))       # Should be AppSettings
     app = SpotifyAppGUI(spotify_controller, app_settings)
+    calculate = Calculations()
     app.run()
 
     
