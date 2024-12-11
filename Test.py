@@ -178,14 +178,17 @@ class SpotifyAppGUI:
         self.optionmenu_var_3 = ctk.StringVar(value="option 1")
         self.optionmenu_3 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_1)
         self.optionmenu_3.pack(side="top",fill="x",padx=100,pady=10)
+        
+        self.settings_menu_settings_lable_1 = ctk.CTkLabel(self.window_settings, text="Slider 1", corner_radius=10, width=50, height=20, font=("Arial", 12))
+        self.settings_menu_settings_lable_1.pack(side="top",fill="x",padx=100,pady=10)
 
         self.optionmenu_slider_var_1 = ctk.IntVar(value=1)
-        self.optionmenu_slider_1 = ctk.CTkSlider(self.window_settings, from_=0, to=10, command=self.slider_event, variable=self.optionmenu_slider_var_1)
-        self.optionmenu_3.pack(side="top",fill="x",padx=100,pady=10)
+        self.optionmenu_slider_1 = ctk.CTkSlider(self.window_settings, from_=0, to=1, command=self.slider_event, variable=self.optionmenu_slider_var_1)
+        self.optionmenu_slider_1.pack(side="top",fill="x",padx=100,pady=10)
 
 
         self.save_settings_button = ctk.CTkButton(self.window_settings, text="Save settings", corner_radius=10, width=50, height=20, font=("Arial", 16))
-        self.save_settings_button.pack(side="top",fill="x",padx=10,pady=10)
+        self.save_settings_button.pack(side="top",fill="x",padx=320,pady=10)
 
 
     def setup_ui_window_player(self):
@@ -268,6 +271,8 @@ class SpotifyAppGUI:
         print("this is where we configure settings window")
         self.settings_menu_lable.configure()
         self.optionmenu_1.configure()
+        self.optionmenu_2.configure()
+        self.optionmenu_3.configure()
         self.optionmenu_slider_1.configure()
         self.change_window_Settings_window.configure()
 
