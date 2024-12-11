@@ -227,6 +227,7 @@ class SpotifyAppGUI:
             current_playback = self.sp.get_current_playback()
 
             #Always when song running
+            
             if current_playback:
                 song_name = current_playback["item"]["name"]
                 artists = ", ".join(artist["name"] for artist in current_playback["item"]["artists"])
