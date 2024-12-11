@@ -234,11 +234,9 @@ class SpotifyAppGUI:
                 self.next_track_button.configure(image=self.button_next_image)
                 if (current_playback['is_playing']):
                     self.pause_or_play_button.configure(image=self.button_pause_image)
-                    print("pause state")
 
                 else:
                     self.pause_or_play_button.configure(image=self.button_start_image)
-                    print("start state")
 
 
                 #Only when song changes
