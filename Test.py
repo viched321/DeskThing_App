@@ -152,6 +152,7 @@ class SpotifyAppGUI:
     def optionmenu_callback(self,selected_option):
         print(f"Selected option: {selected_option}")
 
+
     def slider_event(self,value):
         print(value)
 
@@ -172,11 +173,11 @@ class SpotifyAppGUI:
         self.optionmenu_1.pack(side="top",fill="x",padx=100,pady=(50,10))
 
         self.optionmenu_var_2 = ctk.StringVar(value="option 1")
-        self.optionmenu_2 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_1)
+        self.optionmenu_2 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_2)
         self.optionmenu_2.pack(side="top",fill="x",padx=100,pady=10)
         
         self.optionmenu_var_3 = ctk.StringVar(value="option 1")
-        self.optionmenu_3 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_1)
+        self.optionmenu_3 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_3)
         self.optionmenu_3.pack(side="top",fill="x",padx=100,pady=10)
         
         self.settings_menu_settings_lable_1 = ctk.CTkLabel(self.window_settings, text="Slider 1", corner_radius=10, width=50, height=20, font=("Arial", 12))
@@ -255,13 +256,13 @@ class SpotifyAppGUI:
     def user_specific_setup(self, app_settings,image):
         getting_mean_color = Calculations()
 
-        if app_settings["background"] == 1:
+        if app_settings["background"] == "Minimalistic":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 1)
             self.window_player.configure(fg_color=mean_color)
-        elif app_settings["background"] == 2:
+        elif app_settings["background"] == "Minimalistic with contrast":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 2)
             self.window_player.configure(fg_color=mean_color)
-        elif app_settings["background"] == 3:
+        elif app_settings["background"] == "Cover art":
             self.background_cover_art_label.configure(image=self.background_album_image)
 
     def show_frame(self,frame):
