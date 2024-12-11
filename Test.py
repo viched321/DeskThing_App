@@ -227,6 +227,10 @@ class SpotifyAppGUI:
         self.next_track_button.place(x=450, y=370)
 
         self.addbutton_size=((20,20))
+        self.settings_wheel_button =ctk.CTkButton(self.window_player,text="",width=20,height=20,command=lambda: self.show_frame(self.window_settings), fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.settings_wheel_button.place(x=770, y=1)
+
+        self.addbutton_size=((20,20))
 
         #Progress Slider setup
         self. progress_bar_slider = ctk.CTkSlider(self.window_player, progress_color="white",
@@ -244,9 +248,10 @@ class SpotifyAppGUI:
         self.button_pause_image = self.load_and_resize_image("pause_not_hover.png", self.button_size)
         self.button_start_image = self.load_and_resize_image("start_not_hover.png", self.button_size)
         self.button_add_image = self.load_and_resize_image("add_image.png", self.addbutton_size)
+        self.button_settings_icon = self.load_and_resize_image("settings_icon.png",(20,20))
         self.background_album_image = None
 
-
+        self.button_settings_icon =ctk.CTkImage(light_image=self.button_settings_icon,size= (20,20))
         self.button_next_image = ctk.CTkImage(light_image=self.button_next_image, size=self.button_size)
         self.button_last_image = ctk.CTkImage(light_image=self.button_last_image,size=self.button_size)
         self.button_add_image = ctk.CTkImage(light_image=self.button_add_image, size=self.addbutton_size)
@@ -264,6 +269,10 @@ class SpotifyAppGUI:
             self.window_player.configure(fg_color=mean_color)
         elif app_settings["background"] == "Cover art":
             self.background_cover_art_label.configure(image=self.background_album_image)
+        
+        #settings button
+        self.settings_wheel_button.configure(image=self.button_settings_icon)
+
 
     def show_frame(self,frame):
         frame.tkraise()
