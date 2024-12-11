@@ -270,14 +270,16 @@ class SpotifyAppGUI:
 
         if app_settings["background"] == "Minimalistic":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 1)
+            print(mean_color)
             self.window_player.configure(fg_color=mean_color)
-            self.window_player.configure(image=None)
+            self.background_cover_art_label.configure(image=None)
         elif app_settings["background"] == "Minimalistic with contrast":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 2)
             self.window_player.configure(fg_color=mean_color)
-            self.window_player.configure(image=None)
+            self.background_cover_art_label.configure(image=None)
         elif app_settings["background"] == "Cover art":
             self.background_cover_art_label.configure(image=self.background_album_image)
+            self.window_player.configure(fg_color="gray")
         
         #settings button
         self.settings_wheel_button.configure(image=self.button_settings_icon)
