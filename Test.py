@@ -272,7 +272,7 @@ class SpotifyAppGUI:
 
     def run(self):
         self.update_display()
-        self.window_player.mainloop()
+        self.root.mainloop()
 
 if __name__ == "__main__":
     #ctk.deactivate_automatic_dpi_awareness()
