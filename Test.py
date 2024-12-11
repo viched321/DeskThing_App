@@ -136,10 +136,12 @@ class SpotifyAppGUI:
         self.window_settings = ctk.CTkFrame(self.root)
         for frame in (self.window_player,self.window_settings):
             frame.place(x=0,y=0,relwidth=1,relheight=1)
-        self.setup_ui()
-          #Fails here
+        #ui setup
+        self.setup_ui_window_player()
+        self.setup_ui_window_settings()
+        self.configure_settings_window()
         self.user_specific_setup(app_settings.settings,self.current_song_info["album_art"])
-        self.show_frame(self.window_player)
+        self.show_frame(self.window_settings)
         print("User-specific setup completed.")
 
 
@@ -147,7 +149,46 @@ class SpotifyAppGUI:
         image_path = self.base_folder / image_name
         return Image.open(image_path).resize(size)
 
-    def setup_ui(self):
+    def optionmenu_callback(self,selected_option):
+        print(f"Selected option: {selected_option}")
+
+    def slider_event(self,value):
+        print(value)
+
+
+    def setup_ui_window_settings(self):
+        print("ui for settings window")
+        self.settings_menu_lable = ctk.CTkLabel(self.window_settings, text="Settings menu", corner_radius=10, width=50, height=20, font=("Arial", 16))
+        self.settings_menu_lable.pack(side="top",fill="x",padx=100,pady=10)
+        self.change_window_Settings_window = ctk.CTkButton(self.window_settings, text="Go to meadia player", corner_radius=10, width=50, height=20, font=("Arial", 16), command=lambda: self.show_frame(self.window_player))
+        self.change_window_Settings_window.place(x=10,y=10)
+
+
+
+        
+        #väljer vad är valt sedan tidigare
+        self.optionmenu_var_1 = ctk.StringVar(value="option 1")
+        self.optionmenu_1 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_1)
+        self.optionmenu_1.pack(side="top",fill="x",padx=100,pady=(50,10))
+
+        self.optionmenu_var_2 = ctk.StringVar(value="option 1")
+        self.optionmenu_2 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_1)
+        self.optionmenu_2.pack(side="top",fill="x",padx=100,pady=10)
+        
+        self.optionmenu_var_3 = ctk.StringVar(value="option 1")
+        self.optionmenu_3 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_1)
+        self.optionmenu_3.pack(side="top",fill="x",padx=100,pady=10)
+
+        self.optionmenu_slider_var_1 = ctk.IntVar(value=1)
+        self.optionmenu_slider_1 = ctk.CTkSlider(self.window_settings, from_=0, to=10, command=self.slider_event, variable=self.optionmenu_slider_var_1)
+        self.optionmenu_3.pack(side="top",fill="x",padx=100,pady=10)
+
+
+        self.save_settings_button = ctk.CTkButton(self.window_settings, text="Save settings", corner_radius=10, width=50, height=20, font=("Arial", 16))
+        self.save_settings_button.pack(side="top",fill="x",padx=10,pady=10)
+
+
+    def setup_ui_window_player(self):
         #Cover art label setup
         self.background_cover_art_size: tuple = (900,900)
         self.background_cover_art_label = ctk.CTkLabel(self.window_player, text="", fg_color="transparent", corner_radius=0, width=self.background_cover_art_size[0], height=self.background_cover_art_size[1])
@@ -199,6 +240,8 @@ class SpotifyAppGUI:
         self.button_pause_image = self.load_and_resize_image("pause_not_hover.png", self.button_size)
         self.button_start_image = self.load_and_resize_image("start_not_hover.png", self.button_size)
         self.button_add_image = self.load_and_resize_image("add_image.png", self.addbutton_size)
+        self.background_album_image = None
+
 
         self.button_next_image = ctk.CTkImage(light_image=self.button_next_image, size=self.button_size)
         self.button_last_image = ctk.CTkImage(light_image=self.button_last_image,size=self.button_size)
@@ -220,10 +263,16 @@ class SpotifyAppGUI:
 
     def show_frame(self,frame):
         frame.tkraise()
+    
+    def configure_settings_window(self):
+        print("this is where we configure settings window")
+        self.settings_menu_lable.configure()
+        self.optionmenu_1.configure()
+        self.optionmenu_slider_1.configure()
+        self.change_window_Settings_window.configure()
 
     def update_display(self):
         try:
-            print("start")
             current_playback = self.sp.get_current_playback()
 
             #Always when song running
@@ -271,6 +320,7 @@ class SpotifyAppGUI:
         self.window_player.after(100, self.update_display)
 
     def run(self):
+        print("configure display")
         self.update_display()
         self.root.mainloop()
 
