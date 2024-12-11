@@ -152,12 +152,19 @@ class SpotifyAppGUI:
     def optionmenu_callback(self,selected_option):
         print(f"Selected option: {selected_option}")
 
+    def optionmenu_callback_background(self,selected_option):
+        self.settings.settings["background"] = selected_option
+        self.settings.save_settings()
+        print(f"Selected option: {selected_option}")
+
+
 
     def slider_event(self,value):
         print(value)
 
 
     def setup_ui_window_settings(self,settings):
+
         print("ui for settings window")
         self.settings_menu_lable = ctk.CTkLabel(self.window_settings, text="Settings menu", corner_radius=10, width=50, height=20, font=("Arial", 16))
         self.settings_menu_lable.pack(side="top",fill="x",padx=100,pady=10)
@@ -169,7 +176,7 @@ class SpotifyAppGUI:
         
         #väljer vad är valt sedan tidigare
         self.optionmenu_var_1 = ctk.StringVar(value=settings["background"])
-        self.optionmenu_1 = ctk.CTkOptionMenu(self.window_settings, values=["Minimalistic", "Minimalistic with contrast","Cover art"], command=self.optionmenu_callback, variable=self.optionmenu_var_1)
+        self.optionmenu_1 = ctk.CTkOptionMenu(self.window_settings, values=["Minimalistic", "Minimalistic with contrast","Cover art"], command=self.optionmenu_callback_background, variable=self.optionmenu_var_1)
         self.optionmenu_1.pack(side="top",fill="x",padx=100,pady=(50,10))
 
         self.optionmenu_var_2 = ctk.StringVar(value="option 1")
@@ -259,11 +266,14 @@ class SpotifyAppGUI:
         if app_settings["background"] == "Minimalistic":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 1)
             self.window_player.configure(fg_color=mean_color)
+            self.window_player.configure(image=None)
         elif app_settings["background"] == "Minimalistic with contrast":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 2)
             self.window_player.configure(fg_color=mean_color)
+            self.window_player.configure(image=None)
         elif app_settings["background"] == "Cover art":
             self.background_cover_art_label.configure(image=self.background_album_image)
+            self.window_player.configure(fg_color="transparent")
 
     def show_frame(self,frame):
         frame.tkraise()
@@ -333,8 +343,6 @@ if __name__ == "__main__":
     #ctk.deactivate_automatic_dpi_awareness()
     spotify_controller = SpotifyController()
     app_settings = AppSettings()
-    print(type(spotify_controller))  # Should be SpotifyController
-    print(type(app_settings))       # Should be AppSettings
     app = SpotifyAppGUI(spotify_controller, app_settings)
     calculate = Calculations()
     app.run()
