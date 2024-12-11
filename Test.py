@@ -138,7 +138,7 @@ class SpotifyAppGUI:
             frame.place(x=0,y=0,relwidth=1,relheight=1)
         #ui setup
         self.setup_ui_window_player()
-        self.setup_ui_window_settings()
+        self.setup_ui_window_settings(app_settings.settings)
         self.configure_settings_window()
         self.user_specific_setup(app_settings.settings,self.current_song_info["album_art"])
         self.show_frame(self.window_settings)
@@ -156,7 +156,7 @@ class SpotifyAppGUI:
         print(value)
 
 
-    def setup_ui_window_settings(self):
+    def setup_ui_window_settings(self,settings):
         print("ui for settings window")
         self.settings_menu_lable = ctk.CTkLabel(self.window_settings, text="Settings menu", corner_radius=10, width=50, height=20, font=("Arial", 16))
         self.settings_menu_lable.pack(side="top",fill="x",padx=100,pady=10)
@@ -167,8 +167,8 @@ class SpotifyAppGUI:
 
         
         #väljer vad är valt sedan tidigare
-        self.optionmenu_var_1 = ctk.StringVar(value="option 1")
-        self.optionmenu_1 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_1)
+        self.optionmenu_var_1 = ctk.StringVar(value=settings["background"])
+        self.optionmenu_1 = ctk.CTkOptionMenu(self.window_settings, values=["Minimalistic", "Minimalistic with contrast","Cover art"], command=self.optionmenu_callback, variable=self.optionmenu_var_1)
         self.optionmenu_1.pack(side="top",fill="x",padx=100,pady=(50,10))
 
         self.optionmenu_var_2 = ctk.StringVar(value="option 1")
