@@ -9,6 +9,7 @@ import config
 import numpy as np
 from pathlib import Path
 import json
+import datetime
 
 class SpotifyController:
     def __init__(self):
@@ -120,6 +121,7 @@ class Calculations:
 
 class SpotifyAppGUI:
     def __init__(self,spotify_controller,app_settings):
+        self.current_time = datetime.datetime.now()
         self.sp = spotify_controller
         self.settings = app_settings
         self.base_folder = Path(r"ButtonImages")
@@ -152,11 +154,12 @@ class SpotifyAppGUI:
         for frame in (self.window_player,self.window_settings):
             frame.place(x=0,y=0,relwidth=1,relheight=1)
         #ui setup
+        self.root.attributes("-fullscreen", True)
         self.setup_ui_window_player()
         self.setup_ui_window_settings(app_settings.settings)
         self.configure_settings_window()
         self.user_specific_setup(app_settings.settings,self.current_song_info["album_art"])
-        self.show_frame(self.window_settings)
+        self.show_frame(self.window_player)
         print("User-specific setup completed.")
 
 
@@ -169,9 +172,19 @@ class SpotifyAppGUI:
 
     def optionmenu_callback_background(self,selected_option):
         self.settings.settings["background"] = selected_option
-        self.settings.save_settings()
         print(f"Selected option: {selected_option}")
         self.user_specific_setup(self.settings.settings,self.album_art)
+        
+    def optionmenu_callback_date_and_time(self, selected_option):
+        self.settings.settings["datetime"]=selected_option
+        self.user_specific_setup(self.settings.settings,self.album_art)
+        
+    def optionmenu_callback_progress_bar(self,selected_option):
+        self.settings.settings["progressbar"]=selected_option
+        self.user_specific_setup(self.settings.settings,self.album_art)
+        
+    def save_the_settings(self):
+        self.settings.save_settings()
 
     def slider_event(self,value):
         print(value)
@@ -187,12 +200,12 @@ class SpotifyAppGUI:
         self.optionmenu_1 = ctk.CTkOptionMenu(self.window_settings, values=["Minimalistic", "Minimalistic with contrast","Cover art"], command=self.optionmenu_callback_background, variable=self.optionmenu_var_1)
         self.optionmenu_1.pack(side="top",fill="x",padx=100,pady=(50,10))
 
-        self.optionmenu_var_2 = ctk.StringVar(value="option 1")
-        self.optionmenu_2 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_2)
+        self.optionmenu_var_2 = ctk.StringVar(value=settings["datetime"])
+        self.optionmenu_2 = ctk.CTkOptionMenu(self.window_settings, values=["No date or time", "Time", "Date" ,"Date and time"], command=self.optionmenu_callback_date_and_time, variable=self.optionmenu_var_2)
         self.optionmenu_2.pack(side="top",fill="x",padx=100,pady=10)
         
-        self.optionmenu_var_3 = ctk.StringVar(value="option 1")
-        self.optionmenu_3 = ctk.CTkOptionMenu(self.window_settings, values=["option 1", "option 2","option 3"], command=self.optionmenu_callback, variable=self.optionmenu_var_3)
+        self.optionmenu_var_3 = ctk.StringVar(value=settings["progressbar"])
+        self.optionmenu_3 = ctk.CTkOptionMenu(self.window_settings, values=["No progress bar", "Progress bar"], command=self.optionmenu_callback_progress_bar, variable=self.optionmenu_var_3)
         self.optionmenu_3.pack(side="top",fill="x",padx=100,pady=10)
         
         self.settings_menu_settings_lable_1 = ctk.CTkLabel(self.window_settings, text="Slider 1", corner_radius=10, width=50, height=20, font=("Arial", 12))
@@ -202,7 +215,7 @@ class SpotifyAppGUI:
         self.optionmenu_slider_1 = ctk.CTkSlider(self.window_settings, from_=0, to=1, command=self.slider_event, variable=self.optionmenu_slider_var_1)
         self.optionmenu_slider_1.pack(side="top",fill="x",padx=100,pady=10)
 
-        self.save_settings_button = ctk.CTkButton(self.window_settings, text="Save settings", corner_radius=10, width=50, height=20, font=("Arial", 16))
+        self.save_settings_button = ctk.CTkButton(self.window_settings, text="Save settings", corner_radius=10, width=50, height=20, font=("Arial", 16),command=self.save_the_settings)
         self.save_settings_button.pack(side="top",fill="x",padx=320,pady=10)
 
     def setup_ui_window_player(self):
@@ -227,6 +240,12 @@ class SpotifyAppGUI:
 
         self.song_time_total = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent",fg_color="transparent")
         self.song_time_total.place(x=700, y=220)
+        
+        self.clock = ctk.CTkLabel(self.window_player, text="", font=("Arial",15,"bold"),text_color="white",bg_color="transparent")
+        self.clock.place(x=762,y=440)
+        
+        self.date = ctk.CTkLabel(self.window_player, text="", font=("Arial",15,"bold"),text_color="white",bg_color="transparent")
+        self.date.place(x=762,y=460)
 
         #Button setup
         self.button_size = ((1,1))
@@ -243,7 +262,7 @@ class SpotifyAppGUI:
         self.settings_wheel_button.place(x=770, y=1)
 
         #Progress Slider setup
-        self. progress_bar_slider = ctk.CTkSlider(self.window_player, progress_color="white",
+        self.progress_bar_slider = ctk.CTkSlider(self.window_player, progress_color="white",
                                     button_corner_radius=20,button_length=0,
                                     button_color="white",button_hover_color="gray", 
                                     bg_color="transparent",height = 11, 
@@ -262,7 +281,6 @@ class SpotifyAppGUI:
 
         if app_settings["background"] == "Minimalistic with contrast":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 1)
-            print(mean_color)
             self.background_cover_art_label.configure(image=blank)
             self.window_player.configure(fg_color=mean_color)
 
@@ -274,6 +292,31 @@ class SpotifyAppGUI:
         elif app_settings["background"] == "Cover art":
             self.background_cover_art_label.configure(image=self.background_album_image)
             self.window_player.configure(fg_color="gray")
+            
+        if app_settings["datetime"] == "No time or date":
+            self.date.configure(text="")
+            self.clock.configure(text="")
+            
+        elif app_settings["datetime"] == "Date":
+            self.date.configure(text=f"{self.current_time.month:02}-{self.current_time.day:02}  ")
+            self.clock.configure(text="")
+            
+        elif app_settings["datetime"] == "Time":
+            self.clock.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02}  ")
+            self.date.configure(text="")
+            
+        elif app_settings["datetime"] == "Date and time":
+            self.date.configure(text=f"{self.current_time.month:02}-{self.current_time.day:02}  ")
+            self.clock.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02}  ")
+        if app_settings["progressbar"] == "No progress bar":
+            self.progress_bar_slider.pack_forget()
+            self.song_time_played.pack_forget()
+            self.song_time_total.pack_forget()
+        elif app_settings["progressbar"]=="Progress bar":
+            self.progress_bar_slider.place(x=333, y=229)      
+            self.song_time_played.place(x=307, y=220)
+            self.song_time_total.place(x=700, y=220)
+            
     
 
     def show_frame(self, frame: ctk.CTkFrame):
@@ -334,7 +377,7 @@ class SpotifyAppGUI:
         except Exception as e:
             print(f"Error updating display: {e}")
 
-        self.window_player.after(50, self.update_display)
+        self.window_player.after(100, self.update_display)
 
     def run(self):
         print("configure display")
