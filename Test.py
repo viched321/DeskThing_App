@@ -1,3 +1,4 @@
+#!/usr/bin/env pythonp
 import spotipy
 import customtkinter as ctk
 from PIL import Image, ImageEnhance
@@ -69,15 +70,13 @@ class Calculations:
     def __init__(self):
         self
 
-        
-
     def rgb_to_hex(self,rgb):
         return "#{:02x}{:02x}{:02x}".format(rgb[0], rgb[1], rgb[2])
     
     def adjust_brightness(self,color, factor=1):
         return tuple(max(0, min(255, int(c * factor))) for c in color)
+    
     def enhance_color_channels(color, red_factor=1.2, green_factor=1.2, blue_factor=1.2):
-
         r, g, b = color
         r = int(max(0, min(255, r * red_factor)))  # Adjust red channel
         g = int(max(0, min(255, g * green_factor)))  # Adjust green channel
@@ -85,7 +84,6 @@ class Calculations:
         return (r, g, b)
     
     def get_mean_color_from_center(self, image, user_preference, brightness_factor=1, red_factor=1, green_factor=1, blue_factor=1):
-    
     # Handle None or invalid images early
         if image is None:
             return (0, 0, 0)  # Return black color as a default
@@ -131,8 +129,25 @@ class SpotifyAppGUI:
         self.root.geometry("800x480")
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("dark-blue")
+        self.button_image_size=((50,50))
+        self.addbutton_size=((20,20))
+        self.button_last_image = self.load_and_resize_image("last_button_not_hover.png", self.button_image_size)
+        self.button_next_image = self.load_and_resize_image("skip_button_not_hover.png", self.button_image_size)
+        self.button_pause_image = self.load_and_resize_image("pause_not_hover.png", self.button_image_size)
+        self.button_start_image = self.load_and_resize_image("start_not_hover.png", self.button_image_size)
+        self.button_add_image = self.load_and_resize_image("add_image.png", self.addbutton_size)
+        self.button_settings_icon = self.load_and_resize_image("settings_icon.png",(20,20))
+        self.background_album_image = None
+
+
+        self.button_settings_icon =ctk.CTkImage(light_image=self.button_settings_icon,size= (20,20))
+        self.button_next_image = ctk.CTkImage(light_image=self.button_next_image, size=self.button_image_size)
+        self.button_last_image = ctk.CTkImage(light_image=self.button_last_image,size=self.button_image_size)
+        self.button_add_image = ctk.CTkImage(light_image=self.button_add_image, size=self.addbutton_size)
+        self.button_start_image = ctk.CTkImage(light_image=self.button_start_image, size=self.button_image_size)
+        self.button_pause_image = ctk.CTkImage(light_image=self.button_pause_image, size=self.button_image_size)
         #Frames setup
-        self.window_player = ctk.CTkFrame(self.root)
+        self.window_player = ctk.CTkFrame(self.root,bg_color="transparent",fg_color="transparent")
         self.window_settings = ctk.CTkFrame(self.root)
         for frame in (self.window_player,self.window_settings):
             frame.place(x=0,y=0,relwidth=1,relheight=1)
@@ -156,23 +171,16 @@ class SpotifyAppGUI:
         self.settings.settings["background"] = selected_option
         self.settings.save_settings()
         print(f"Selected option: {selected_option}")
-
-
+        self.user_specific_setup(self.settings.settings,self.album_art)
 
     def slider_event(self,value):
         print(value)
 
-
     def setup_ui_window_settings(self,settings):
-
-        print("ui for settings window")
         self.settings_menu_lable = ctk.CTkLabel(self.window_settings, text="Settings menu", corner_radius=10, width=50, height=20, font=("Arial", 16))
         self.settings_menu_lable.pack(side="top",fill="x",padx=100,pady=10)
-        self.change_window_Settings_window = ctk.CTkButton(self.window_settings, text="Go to meadia player", corner_radius=10, width=50, height=20, font=("Arial", 16), command=lambda: self.show_frame(self.window_player))
+        self.change_window_Settings_window = ctk.CTkButton(self.window_settings, text="Back", corner_radius=10, width=50, height=20, font=("Arial", 16), command=lambda: self.show_frame(self.window_player))
         self.change_window_Settings_window.place(x=10,y=10)
-
-
-
         
         #väljer vad är valt sedan tidigare
         self.optionmenu_var_1 = ctk.StringVar(value=settings["background"])
@@ -194,15 +202,13 @@ class SpotifyAppGUI:
         self.optionmenu_slider_1 = ctk.CTkSlider(self.window_settings, from_=0, to=1, command=self.slider_event, variable=self.optionmenu_slider_var_1)
         self.optionmenu_slider_1.pack(side="top",fill="x",padx=100,pady=10)
 
-
         self.save_settings_button = ctk.CTkButton(self.window_settings, text="Save settings", corner_radius=10, width=50, height=20, font=("Arial", 16))
         self.save_settings_button.pack(side="top",fill="x",padx=320,pady=10)
-
 
     def setup_ui_window_player(self):
         #Cover art label setup
         self.background_cover_art_size: tuple = (900,900)
-        self.background_cover_art_label = ctk.CTkLabel(self.window_player, text="", fg_color="transparent", corner_radius=0, width=self.background_cover_art_size[0], height=self.background_cover_art_size[1])
+        self.background_cover_art_label = ctk.CTkLabel(self.window_player, text="", width=self.background_cover_art_size[0], height=self.background_cover_art_size[1])
         self.background_cover_art_label.place(x=-100, y=-100)
         
         self.cover_art_size: tuple = (250,250)
@@ -210,21 +216,21 @@ class SpotifyAppGUI:
         self.cover_art_label.place(x=20, y=20)
 
         #Text label setup
-        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w",bg_color="transparent")
+        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w",fg_color="transparent",bg_color="transparent")
         self.song_label.place(x=320, y=60)
 
-        self.artist_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 20), text_color="white", anchor="w",bg_color="transparent")
+        self.artist_label = ctk.CTkLabel(self.window_player,width=1,height=1, text="", font=("Arial", 20), text_color="white", anchor="w",bg_color="transparent",fg_color="transparent")
         self.artist_label.place(x=320, y=120)
 
-        self.song_time_played = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent")
+        self.song_time_played = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent",fg_color="transparent")
         self.song_time_played.place(x=307, y=220)
 
-        self.song_time_total = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent")
+        self.song_time_total = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent",fg_color="transparent")
         self.song_time_total.place(x=700, y=220)
 
         #Button setup
-        self.button_size = ((50,50))
-        self.previous_track_button =ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.previous_track, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.button_size = ((1,1))
+        self.previous_track_button =ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.previous_track, fg_color="transparent", bg_color ="transparent",hover_color="#FFFFFF")
         self.previous_track_button.place(x=250, y=370)
 
         self.pause_or_play_button = ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.pause_or_play,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
@@ -233,11 +239,8 @@ class SpotifyAppGUI:
         self.next_track_button = ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.next_track,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.next_track_button.place(x=450, y=370)
 
-        self.addbutton_size=((20,20))
         self.settings_wheel_button =ctk.CTkButton(self.window_player,text="",width=20,height=20,command=lambda: self.show_frame(self.window_settings), fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.settings_wheel_button.place(x=770, y=1)
-
-        self.addbutton_size=((20,20))
 
         #Progress Slider setup
         self. progress_bar_slider = ctk.CTkSlider(self.window_player, progress_color="white",
@@ -250,41 +253,30 @@ class SpotifyAppGUI:
         self.progress_bar_slider.place(x=333, y=229)
 
         #Button Images setup
-        self.button_last_image = self.load_and_resize_image("last_button_not_hover.png", self.button_size)
-        self.button_next_image = self.load_and_resize_image("skip_button_not_hover.png", self.button_size)
-        self.button_pause_image = self.load_and_resize_image("pause_not_hover.png", self.button_size)
-        self.button_start_image = self.load_and_resize_image("start_not_hover.png", self.button_size)
-        self.button_add_image = self.load_and_resize_image("add_image.png", self.addbutton_size)
-        self.button_settings_icon = self.load_and_resize_image("settings_icon.png",(20,20))
-        self.background_album_image = None
 
-        self.button_settings_icon =ctk.CTkImage(light_image=self.button_settings_icon,size= (20,20))
-        self.button_next_image = ctk.CTkImage(light_image=self.button_next_image, size=self.button_size)
-        self.button_last_image = ctk.CTkImage(light_image=self.button_last_image,size=self.button_size)
-        self.button_add_image = ctk.CTkImage(light_image=self.button_add_image, size=self.addbutton_size)
-        self.button_start_image = ctk.CTkImage(light_image=self.button_start_image, size=self.button_size)
-        self.button_pause_image = ctk.CTkImage(light_image=self.button_pause_image, size=self.button_size)
+        self.settings_wheel_button.configure(image=self.button_settings_icon)
 
-    def user_specific_setup(self, app_settings,image):
+    def user_specific_setup(self, app_settings, image):
         getting_mean_color = Calculations()
+        blank = ctk.CTkImage(Image.new('RGBA', (100, 100), (255, 0, 0, 0)))
 
-        if app_settings["background"] == "Minimalistic":
+        if app_settings["background"] == "Minimalistic with contrast":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 1)
             print(mean_color)
+            self.background_cover_art_label.configure(image=blank)
             self.window_player.configure(fg_color=mean_color)
-            self.background_cover_art_label.configure(image=None)
-        elif app_settings["background"] == "Minimalistic with contrast":
+
+        elif app_settings["background"] == "Minimalistic":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 2)
+            self.background_cover_art_label.configure(image=blank)
             self.window_player.configure(fg_color=mean_color)
-            self.background_cover_art_label.configure(image=None)
+
         elif app_settings["background"] == "Cover art":
             self.background_cover_art_label.configure(image=self.background_album_image)
             self.window_player.configure(fg_color="gray")
-        
-        #settings button
-        self.settings_wheel_button.configure(image=self.button_settings_icon)
+    
 
-    def show_frame(self,frame):
+    def show_frame(self, frame: ctk.CTkFrame):
         frame.tkraise()
     
     def configure_settings_window(self):
@@ -303,7 +295,6 @@ class SpotifyAppGUI:
             #Always when song running
             
             if current_playback:
-                song_name = current_playback["item"]["name"]
                 artists = ", ".join(artist["name"] for artist in current_playback["item"]["artists"])
                 self.previous_track_button.configure(image=self.button_last_image)
                 self.next_track_button.configure(image=self.button_next_image)
@@ -315,21 +306,23 @@ class SpotifyAppGUI:
 
 
                 #Only when song changes
-                if song_name != self.current_song_info["song_name"]:
-                    album_art_url = current_playback["item"]["album"]["images"][0]["url"]
-                    response = requests.get(album_art_url)
-                    album_art = Image.open(BytesIO(response.content)).resize((self.cover_art_size))
-                    album_image = ctk.CTkImage(album_art, size=self.cover_art_size)
-                    self.current_song_info.update({"album_art": album_image, "song_name": song_name, "artists": artists})
-                    duration_ms = current_playback["item"]['duration_ms']
-                    self.progress_bar_slider.configure(to=duration_ms)
-                    self.song_time_total.configure(text=f"{duration_ms//60000}:{int((duration_ms%60000)/1000):02}")
-                    enhancer = ImageEnhance.Brightness(album_art)
-                    background_album_art_darker = enhancer.enhance(0.5)
-                    self.background_album_image = ctk.CTkImage(background_album_art_darker, size=self.background_cover_art_size)
-                    self.user_specific_setup(app_settings.settings,album_art)
+                try:
+                    if current_playback["item"]["name"] != self.current_song_info["song_name"]:
+                        album_art_url = current_playback["item"]["album"]["images"][0]["url"]
+                        response = requests.get(album_art_url)
+                        self.album_art = Image.open(BytesIO(response.content))
+                        self.album_image = ctk.CTkImage(self.album_art, size=self.cover_art_size)
+                        self.current_song_info.update({"album_art": self.album_image, "song_name": current_playback["item"]["name"], "artists": artists})
+                        duration_ms = current_playback["item"]['duration_ms']
+                        self.progress_bar_slider.configure(to=duration_ms)
+                        self.song_time_total.configure(text=f"{duration_ms//60000}:{int((duration_ms%60000)/1000):02}")
+                        background_album_art_darker = ImageEnhance.Brightness(self.album_art).enhance(0.5)
+                        self.background_album_image = ctk.CTkImage(background_album_art_darker, size=self.background_cover_art_size)
+                        self.user_specific_setup(app_settings.settings, self.album_art)
+                except Exception as e:
+                    print(f"oijdsajoioijdsajwqdiowqj updating display: {e}")
 
-                self.song_label.configure(text=song_name)
+                self.song_label.configure(text=current_playback["item"]["name"])
                 self.artist_label.configure(text=artists)
                 self.cover_art_label.configure(image=self.current_song_info["album_art"])
                 progress_ms = current_playback['progress_ms']
@@ -341,7 +334,7 @@ class SpotifyAppGUI:
         except Exception as e:
             print(f"Error updating display: {e}")
 
-        self.window_player.after(100, self.update_display)
+        self.window_player.after(50, self.update_display)
 
     def run(self):
         print("configure display")
