@@ -130,9 +130,12 @@ class SpotifyAppGUI:
         self.image_data = self.image_data.resize((800, 480))
         self.home_image = ctk.CTkImage(self.image_data, size=(800,480))
         self.sp = spotify_controller
+        self.current_playback = None
         self.settings = app_settings
         self.base_folder = Path(r"ButtonImages")
         self.current_song_info = {"album_art": self.load_and_resize_image(image_name="add_image.png", size=(20,20)), "song_name": "", "artists": ""}
+        #cutomTKinter
+        self.values = ["window_setting1", "window_setting2", "window_setting3", "window_setting4"]
         self.current_frame = None
         self.went_home = False
         self.root = ctk.CTk()
@@ -198,7 +201,10 @@ class SpotifyAppGUI:
     
     def optionmenu_callback_homescreen(self,selected_option):
         self.settings.settings["homescreen"]=selected_option
-
+    
+    def slider_Brightness(self, selected_option):
+        self.settings.settings["brightness_factor"] = selected_option
+        
         
     def save_the_settings(self):
         self.settings.save_settings()
@@ -211,7 +217,7 @@ class SpotifyAppGUI:
         self.home_window_image.place(x=0,y=0)
         
         self.player_button = ctk.CTkButton(self.window_home,text="back",command=lambda: self.show_frame(self.window_player),width=20,height=20)
-        self.player_button.place(x=770,y=1)
+        self.player_button.place(x=760,y=1)
     
     def going_homescreen(self):
         self.went_home = False
@@ -226,30 +232,34 @@ class SpotifyAppGUI:
         
         self.change_window_Settings_window = ctk.CTkButton(self.window_settings, text="Back", corner_radius=10, width=50, height=20, font=("Arial", 16), command=lambda: self.show_frame(self.window_player))
         self.change_window_Settings_window.place(x=10,y=10)
-        
+
+        self.scrollable_frame = ctk.CTkScrollableFrame(self.window_settings, width=500, height=290)
+        self.scrollable_frame.pack(side="top",fill="x",padx=40,pady=(50,10))
+
+        #settings        
         self.optionmenu_var_1 = ctk.StringVar(value=settings["background"])
-        self.optionmenu_1 = ctk.CTkOptionMenu(self.window_settings, values=["Minimalistic", "Minimalistic with contrast","Cover art"], command=self.optionmenu_callback_background, variable=self.optionmenu_var_1)
+        self.optionmenu_1 = ctk.CTkOptionMenu(self.scrollable_frame, values=["Minimalistic", "Minimalistic with contrast","Cover art"], command=self.optionmenu_callback_background, variable=self.optionmenu_var_1, height=50, font=("Arial", 16), dropdown_font=("Arial", 16))
         self.optionmenu_1.pack(side="top",fill="x",padx=100,pady=(50,10))
 
+        self.settings_menu_settings_lable_1 = ctk.CTkLabel(self.scrollable_frame, text="Slider 1", corner_radius=10, width=50, height=20, font=("Arial", 12))
+        self.settings_menu_settings_lable_1.pack(side="top",fill="x",padx=100,pady=10)
+
+        self.optionmenu_slider_var_1 = ctk.IntVar(value=settings["brightness_factor"])
+        self.optionmenu_slider_1 = ctk.CTkSlider(self.scrollable_frame, from_=0, to=1, command=self.slider_Brightness, variable=self.optionmenu_slider_var_1)
+        self.optionmenu_slider_1.pack(side="top",fill="x",padx=100,pady=10)
+
         self.optionmenu_var_2 = ctk.StringVar(value=settings["datetime"])
-        self.optionmenu_2 = ctk.CTkOptionMenu(self.window_settings, values=["No date or time", "Time", "Date" ,"Date and time"], command=self.optionmenu_callback_date_and_time, variable=self.optionmenu_var_2)
+        self.optionmenu_2 = ctk.CTkOptionMenu(self.scrollable_frame, values=["No date or time", "Time", "Date" ,"Date and time"], command=self.optionmenu_callback_date_and_time, variable=self.optionmenu_var_2, height=50, font=("Arial", 16), dropdown_font=("Arial", 16))
         self.optionmenu_2.pack(side="top",fill="x",padx=100,pady=10)
         
         self.optionmenu_var_3 = ctk.StringVar(value=settings["progressbar"])
-        self.optionmenu_3 = ctk.CTkOptionMenu(self.window_settings, values=["No progress bar", "Progress bar"], command=self.optionmenu_callback_progress_bar, variable=self.optionmenu_var_3)
+        self.optionmenu_3 = ctk.CTkOptionMenu(self.scrollable_frame, values=["No progress bar", "Progress bar"], command=self.optionmenu_callback_progress_bar, variable=self.optionmenu_var_3, height=50, font=("Arial", 16), dropdown_font=("Arial", 16))
         self.optionmenu_3.pack(side="top",fill="x",padx=100,pady=10)
         
         self.optionmenu_var_4 = ctk.StringVar(value=settings["homescreen"])
-        self.optionmenu_4 = ctk.CTkOptionMenu(self.window_settings, values=["Go to the player", "Remain in the homescreen"], command=self.optionmenu_callback_homescreen, variable=self.optionmenu_var_4)
+        self.optionmenu_4 = ctk.CTkOptionMenu(self.scrollable_frame, values=["Go to the player", "Remain in the homescreen"], command=self.optionmenu_callback_homescreen, variable=self.optionmenu_var_4, height=50, font=("Arial", 16), dropdown_font=("Arial", 16))
         self.optionmenu_4.pack(side="top",fill="x",padx=100,pady=10)
         
-        
-        self.settings_menu_settings_lable_1 = ctk.CTkLabel(self.window_settings, text="Slider 1", corner_radius=10, width=50, height=20, font=("Arial", 12))
-        self.settings_menu_settings_lable_1.pack(side="top",fill="x",padx=100,pady=10)
-
-        self.optionmenu_slider_var_1 = ctk.IntVar(value=1)
-        self.optionmenu_slider_1 = ctk.CTkSlider(self.window_settings, from_=0, to=1, command=self.slider_event, variable=self.optionmenu_slider_var_1)
-        self.optionmenu_slider_1.pack(side="top",fill="x",padx=100,pady=10)
 
         self.save_settings_button = ctk.CTkButton(self.window_settings, text="Save settings", corner_radius=10, width=50, height=20, font=("Arial", 16),command=self.save_the_settings)
         self.save_settings_button.pack(side="top",fill="x",padx=320,pady=10)
@@ -312,16 +322,17 @@ class SpotifyAppGUI:
         self.progress_bar_slider.place(x=333, y=229)
 
     def user_specific_setup(self, app_settings, image):
+        print(app_settings["brightness_factor"])
         getting_mean_color = Calculations()
         blank = ctk.CTkImage(Image.new('RGBA', (100, 100), (255, 0, 0, 0)))
 
         if app_settings["background"] == "Minimalistic with contrast":
-            mean_color = getting_mean_color.get_mean_color_from_center(image, 1)
+            mean_color = getting_mean_color.get_mean_color_from_center(image, 1, app_settings["brightness_factor"])
             self.background_cover_art_label.configure(image=blank)
             self.window_player.configure(fg_color=mean_color)
 
         elif app_settings["background"] == "Minimalistic":
-            mean_color = getting_mean_color.get_mean_color_from_center(image, 2)
+            mean_color = getting_mean_color.get_mean_color_from_center(image, 2, app_settings["brightness_factor"])
             self.background_cover_art_label.configure(image=blank)
             self.window_player.configure(fg_color=mean_color)
 
@@ -375,9 +386,7 @@ class SpotifyAppGUI:
         if self.current_frame == self.window_home:
             self.home_window_image.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02} \n{self.current_time.month:02}/{self.current_time.day:02}-{self.current_time.year}")
         try:
-            self.current_playback = self.sp.get_current_playback()
-
-            #Always when song running
+            self.current_playback = self.sp.sp.current_playback()
             if self.current_playback:   
                 self.current_time = datetime.datetime.now() 
                 artists = ", ".join(artist["name"] for artist in self.current_playback["item"]["artists"])
@@ -428,6 +437,7 @@ class SpotifyAppGUI:
     def run(self):
         print("configure display")
         self.update_display()
+        print("Displayed")
         self.root.mainloop()
 
 if __name__ == "__main__":
