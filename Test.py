@@ -372,6 +372,8 @@ class SpotifyAppGUI:
         self.current_time = datetime.datetime.now()
         self.clock.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02}  ")
         self.date.configure(text=f"{self.current_time.month:02}/{self.current_time.day:02}  ")
+        if self.current_frame == self.window_home:
+            self.home_window_image.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02} \n{self.current_time.month:02}/{self.current_time.day:02}-{self.current_time.year}")
         try:
             self.current_playback = self.sp.get_current_playback()
 
