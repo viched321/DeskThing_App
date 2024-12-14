@@ -382,6 +382,7 @@ class SpotifyAppGUI:
         self.current_time = datetime.datetime.now()
         self.clock.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02}  ")
         self.date.configure(text=f"{self.current_time.month:02}/{self.current_time.day:02}  ")
+
         try:
             self.current_playback = self.sp.get_current_playback()
 
@@ -436,6 +437,7 @@ class SpotifyAppGUI:
     def run(self):
         print("configure display")
         self.update_display()
+        print("Displayed")
         self.root.mainloop()
 
 if __name__ == "__main__":
