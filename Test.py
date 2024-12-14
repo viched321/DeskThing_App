@@ -214,8 +214,7 @@ class SpotifyAppGUI:
         self.player_button.place(x=770,y=1)
     
     def going_homescreen(self):
-        self.went_home == False
-        print(self.current_playback['is_playing'])
+        self.went_home = False
         if (self.current_playback['is_playing']) == True:
             self.went_home = True
         self.show_frame(self.window_home)
@@ -299,7 +298,7 @@ class SpotifyAppGUI:
         self.settings_wheel_button.place(x=770, y=1)
         
         #tog bort denna, den orsakar problem
-        self.home_house_button = ctk.CTkButton(self.window_player,text="",image=self.button_home_icon, width=20,height=20,command=lambda:self.show_frame(self.window_home) , fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        self.home_house_button = ctk.CTkButton(self.window_player,text="",image=self.button_home_icon, width=20,height=20,command=self.going_homescreen, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.home_house_button.place(x=740, y=1)
 
         #Progress Slider setup
