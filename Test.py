@@ -130,6 +130,7 @@ class SpotifyAppGUI:
         self.image_data = self.image_data.resize((800, 480))
         self.home_image = ctk.CTkImage(self.image_data, size=(800,480))
         self.sp = spotify_controller
+        self.current_playback = None
         self.settings = app_settings
         self.base_folder = Path(r"ButtonImages")
         self.current_song_info = {"album_art": self.load_and_resize_image(image_name="add_image.png", size=(20,20)), "song_name": "", "artists": ""}
@@ -384,9 +385,7 @@ class SpotifyAppGUI:
         self.date.configure(text=f"{self.current_time.month:02}/{self.current_time.day:02}  ")
 
         try:
-            self.current_playback = self.sp.get_current_playback()
-
-            #Always when song running
+            self.current_playback = self.sp.sp.current_playback()
             if self.current_playback:   
                 self.current_time = datetime.datetime.now() 
                 artists = ", ".join(artist["name"] for artist in self.current_playback["item"]["artists"])
