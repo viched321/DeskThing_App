@@ -205,15 +205,12 @@ class SpotifyAppGUI:
 
     def slider_event(self,value):
         print(value)
-        
-    def go_to_player(self):
-        self.show_frame(self.window_player)
-        
+               
     def setup_ui_window_home(self):
         self.home_window_image = ctk.CTkLabel(self.window_home,image=self.home_image,text=f"{self.current_time.hour:02}:{self.current_time.minute:02}\n{self.current_time.month:02}/{self.current_time.day:02}-{self.current_time.year}",font=("Arial",60),text_color="white")
         self.home_window_image.place(x=0,y=0)
         
-        self.player_button = ctk.CTkButton(self.window_home,text="Go to player",command=self.go_to_player,width=20,height=20)
+        self.player_button = ctk.CTkButton(self.window_home,text="back",command=lambda: self.show_frame(self.window_player),width=20,height=20)
         self.player_button.place(x=770,y=1)
     
     def going_homescreen(self):
@@ -301,7 +298,8 @@ class SpotifyAppGUI:
         self.settings_wheel_button =ctk.CTkButton(self.window_player,text="",image=self.button_settings_icon,width=20,height=20,command=lambda: self.show_frame(self.window_settings), fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.settings_wheel_button.place(x=770, y=1)
         
-        self.home_house_button = ctk.CTkButton(self.window_player,text="",image=self.button_home_icon, width=20,height=20,command=self.going_homescreen, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
+        #tog bort denna, den orsakar problem
+        self.home_house_button = ctk.CTkButton(self.window_player,text="",image=self.button_home_icon, width=20,height=20,command=lambda:self.show_frame(self.window_home) , fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.home_house_button.place(x=740, y=1)
 
         #Progress Slider setup
