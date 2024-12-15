@@ -227,7 +227,7 @@ class SpotifyAppGUI:
         self.user_specific_setup(app_settings.settings, self.album_art)
     
     def slider_blue(self, selected_option):
-        self.settings.settings["green_factor"] = selected_option
+        self.settings.settings["blue_factor"] = selected_option
         print(selected_option)
         self.user_specific_setup(app_settings.settings, self.album_art)
         
@@ -255,12 +255,19 @@ class SpotifyAppGUI:
     
     #save location avv progress bar
     def save_xy(self):
-        if(self.progressbar_x_entry.get() > 0):
-            self.settings.settings["ProgressbarX"] = self.progressbar_x_entry.get()
-        if(self.progressbar_y_entry.get() > 0):
-            self.settings.settings["ProgressbarY"] = self.progressbar_y_entry.get()
+        if(int(self.progressbar_x_entry.get()) > 0):
+            self.settings.settings["ProgressbarX"] = int(self.progressbar_x_entry.get())
+        if(int(self.progressbar_y_entry.get() > 0)):
+            self.settings.settings["ProgressbarY"] = int(self.progressbar_y_entry.get())
         print(self.progressbar_y_entry.get())
-       
+        self.user_specific_setup(self.settings.settings,self.album_art)
+
+    
+    def reset_xy(self):
+        self.settings.settings["ProgressbarX"] = 320
+        self.settings.settings["ProgressbarY"] = 200
+        self.user_specific_setup(self.settings.settings,self.album_art)
+
 
     def setup_ui_window_settings(self,settings):
         self.settings_menu_lable = ctk.CTkLabel(self.window_settings, text="Settings menu", corner_radius=10, width=50, height=20, font=("Arial", 16))
@@ -363,16 +370,20 @@ class SpotifyAppGUI:
         self.progressbar_y_entry.pack(side="left")
 
         #save xy location
-        self.progressbar_xy_save_button = ctk.CTkButton(self.xy_frame, text="save xy settings", command=self.save_xy)
+        self.progressbar_xy_save_button = ctk.CTkButton(self.xy_frame, text="save xy", command=self.save_xy)
         self.progressbar_xy_save_button.pack(side="left",padx=10)
 
+        #reset xy to default
+        self.progressbar_xy_reset_save_button = ctk.CTkButton(self.xy_frame, text="reset xy", command=self.reset_xy)
+        self.progressbar_xy_reset_save_button.pack(side="left",padx=10)
 
-        self.save_settings_button = ctk.CTkButton(self.scrollable_frame, text="Save", corner_radius=10, width=50, height=20, font=("Arial", 16),command=self.save_the_settings)
+
+        self.save_settings_button = ctk.CTkButton(self.window_settings, text="Save", corner_radius=10, width=50, height=20, font=("Arial", 16),command=self.save_the_settings)
         self.save_settings_button.pack(side="top",fill="x",padx=300,pady=10)
 
     def setup_ui_window_player(self):
-        timer_bar_locationX=320
-        timer_bar_locationY=200
+        timer_bar_locationX= 10
+        timer_bar_locationY= 10
 
         #Cover art label setup
         self.background_cover_art_size: tuple = (900,900)
@@ -437,12 +448,12 @@ class SpotifyAppGUI:
         blank = ctk.CTkImage(Image.new('RGBA', (100, 100), (255, 0, 0, 0)))
 
         if app_settings["background"] == "Minimalistic with contrast":
-            mean_color = getting_mean_color.get_mean_color_from_center(image, 1, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"])
+            mean_color = getting_mean_color.get_mean_color_from_center(image, 1, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
             self.background_cover_art_label.configure(image=blank)
             self.window_player.configure(fg_color=mean_color)
 
         elif app_settings["background"] == "Minimalistic":
-            mean_color = getting_mean_color.get_mean_color_from_center(image, 2, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"])
+            mean_color = getting_mean_color.get_mean_color_from_center(image, 2, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
             self.background_cover_art_label.configure(image=blank)
             self.window_player.configure(fg_color=mean_color)
 
@@ -474,11 +485,19 @@ class SpotifyAppGUI:
             self.previous_track_button.place_forget()  # If the button was placed with place()
             self.next_track_button.place_forget()
             self.pause_or_play_button.place_forget()
+        else:
+            self.previous_track_button.place(x=250, y=370)  # If the button was placed with place()
+            self.next_track_button.place(x=450, y=370)
+            self.pause_or_play_button.place(x=350,y=370)
+
+        #configure new xy location for progressbar
+        self.song_time_played.place(x=app_settings["ProgressbarX"], y=app_settings["ProgressbarY"])
+        self.song_time_total.place(x=app_settings["ProgressbarX"]+400, y=app_settings["ProgressbarY"])
+        self.progress_bar_slider.place(x=app_settings["ProgressbarX"]+30, y=app_settings["ProgressbarY"]+10)
 
             
-            
         #Chance to toggle progress bar on and off work in progress
-            """
+        """
         if app_settings["progressbar"] == "No progress bar":
             self.progress_bar_slider.pack_forget()
             self.song_time_played.pack_forget()
