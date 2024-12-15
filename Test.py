@@ -246,16 +246,21 @@ class SpotifyAppGUI:
         print(f"Selected option: {selected_option}")
         self.user_specific_setup(self.settings.settings,self.album_art)
     
-
-
-
-    
     def going_homescreen(self):
         self.went_home = False
         if (self.current_playback['is_playing']) == True:
             self.went_home = True
         self.show_frame(self.window_home)
         return self.went_home
+    
+    #save location avv progress bar
+    def save_xy(self):
+        if(self.progressbar_x_entry.get() > 0):
+            self.settings.settings["ProgressbarX"] = self.progressbar_x_entry.get()
+        if(self.progressbar_y_entry.get() > 0):
+            self.settings.settings["ProgressbarY"] = self.progressbar_y_entry.get()
+        print(self.progressbar_y_entry.get())
+       
 
     def setup_ui_window_settings(self,settings):
         self.settings_menu_lable = ctk.CTkLabel(self.window_settings, text="Settings menu", corner_radius=10, width=50, height=20, font=("Arial", 16))
@@ -335,10 +340,40 @@ class SpotifyAppGUI:
         self.optionmenu_button_preference = ctk.CTkOptionMenu(self.scrollable_frame, values=["Clean", "Default"], command=self.optionmenu_callback_button_preference, variable=self.optionmenu_var_button_preference, height=50, font=("Arial", 16), dropdown_font=("Arial", 16))
         self.optionmenu_button_preference.pack(side="top",fill="x",padx=100,pady=10)
 
-        self.save_settings_button = ctk.CTkButton(self.window_settings, text="Save settings", corner_radius=10, width=50, height=20, font=("Arial", 16),command=self.save_the_settings)
-        self.save_settings_button.pack(side="top",fill="x",padx=320,pady=10)
+        #frame for xy buttons
+        self.xy_frame = ctk.CTkFrame(self.scrollable_frame)
+        self.xy_frame.pack(fill="x", padx=10, pady=10)
+
+        # x position progress bar
+        self.progressbar_x_entry_var = ctk.IntVar(value=settings["ProgressbarX"])
+        self.progressbar_x_lable = ctk.CTkLabel(self.xy_frame, text="X: {progressbar_x_entry_var}", corner_radius=10, width=50, height=20, font=("Arial", 16))
+        self.progressbar_x_entry = ctk.CTkEntry(self.xy_frame)
+
+        #x settings and progressbar
+        self.progressbar_x_lable.pack(side="left")
+        self.progressbar_x_entry.pack(side="left")
+
+        #lable and setting
+        self.progressbar_y_entry_var = ctk.IntVar(value=settings["ProgressbarY"])
+        self.progressbar_y_lable = ctk.CTkLabel(self.xy_frame, text="X: {progressbar_y_entry_var}", corner_radius=10, width=50, height=20, font=("Arial", 16))
+        self.progressbar_y_entry = ctk.CTkEntry(self.xy_frame)
+        
+        #location y settings
+        self.progressbar_y_lable.pack(side="left")
+        self.progressbar_y_entry.pack(side="left")
+
+        #save xy location
+        self.progressbar_xy_save_button = ctk.CTkButton(self.xy_frame, text="save xy settings", command=self.save_xy)
+        self.progressbar_xy_save_button.pack(side="left",padx=10)
+
+
+        self.save_settings_button = ctk.CTkButton(self.scrollable_frame, text="Save", corner_radius=10, width=50, height=20, font=("Arial", 16),command=self.save_the_settings)
+        self.save_settings_button.pack(side="top",fill="x",padx=300,pady=10)
 
     def setup_ui_window_player(self):
+        timer_bar_locationX=320
+        timer_bar_locationY=200
+
         #Cover art label setup
         self.background_cover_art_size: tuple = (900,900)
         self.background_cover_art_label = ctk.CTkLabel(self.window_player, text="", width=self.background_cover_art_size[0], height=self.background_cover_art_size[1])
@@ -352,14 +387,16 @@ class SpotifyAppGUI:
         self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w",fg_color="transparent",bg_color="transparent")
         self.song_label.place(x=320, y=60)
 
+        #artist lable
         self.artist_label = ctk.CTkLabel(self.window_player,width=1,height=1, text="", font=("Arial", 20), text_color="white", anchor="w",bg_color="transparent",fg_color="transparent")
         self.artist_label.place(x=320, y=120)
 
+        #song timer
         self.song_time_played = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent",fg_color="transparent")
-        self.song_time_played.place(x=307, y=220)
+        self.song_time_played.place(x=timer_bar_locationX, y=timer_bar_locationY)
 
         self.song_time_total = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent",fg_color="transparent")
-        self.song_time_total.place(x=700, y=220)
+        self.song_time_total.place(x=timer_bar_locationX+400, y=timer_bar_locationY)
         
         self.clock = ctk.CTkLabel(self.window_player, text="", font=("Arial",15,"bold"),text_color="white",bg_color="transparent")
         self.clock.place(x=762,y=440)
@@ -392,7 +429,7 @@ class SpotifyAppGUI:
                                     width=360,border_width=0,
                                     from_=0, to=1000, number_of_steps=1000, 
                                     corner_radius=10,command=self.sp.slider_changed)
-        self.progress_bar_slider.place(x=333, y=229)
+        self.progress_bar_slider.place(x=timer_bar_locationX+30, y=timer_bar_locationY+10)
 
     def user_specific_setup(self, app_settings, image):
         print(app_settings["brightness_factor"])
@@ -460,9 +497,17 @@ class SpotifyAppGUI:
         self.current_frame = frame
     
     def update_display(self):
+
+        #configure
         self.current_time = datetime.datetime.now()
         self.clock.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02}  ")
         self.date.configure(text=f"{self.current_time.month:02}/{self.current_time.day:02}  ")
+        self.tempx = app.settings.settings["ProgressbarX"]
+        self.tempy = app.settings.settings["ProgressbarY"]
+        self.progressbar_x_lable.configure(text=f"x: {self.tempx}")
+        self.progressbar_y_lable.configure(text=f"x: {self.tempy}")
+
+
         if self.current_frame == self.window_home:
             self.home_window_image.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02} \n{self.current_time.month:02}/{self.current_time.day:02}-{self.current_time.year}")
         try:
