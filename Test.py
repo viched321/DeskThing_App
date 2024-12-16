@@ -247,18 +247,24 @@ class SpotifyAppGUI:
         self.user_specific_setup(self.settings.settings,self.album_art)
     
     def going_homescreen(self):
-        self.went_home = False
-        if (self.current_playback['is_playing']) == True:
+        if self.current_playback == None:
+            self.went_home = False
+            
+        elif (self.current_playback['is_playing']) == True:
             self.went_home = True
+        else: 
+            self.went_home = False
         self.show_frame(self.window_home)
         return self.went_home
     
     #save location avv progress bar
     def save_xy(self):
-        if(int(self.progressbar_x_entry.get()) > 0):
-            self.settings.settings["ProgressbarX"] = int(self.progressbar_x_entry.get())
-        if(int(self.progressbar_y_entry.get() > 0)):
-            self.settings.settings["ProgressbarY"] = int(self.progressbar_y_entry.get())
+        y_input = int(self.progressbar_y_entry.get())
+        x_input = int(self.progressbar_x_entry.get())
+        if(x_input > 0):
+            self.settings.settings["ProgressbarX"] = x_input
+        if(y_input > 0):
+            self.settings.settings["ProgressbarY"] = y_input
         print(self.progressbar_y_entry.get())
         self.user_specific_setup(self.settings.settings,self.album_art)
 
@@ -266,6 +272,8 @@ class SpotifyAppGUI:
     def reset_xy(self):
         self.settings.settings["ProgressbarX"] = 320
         self.settings.settings["ProgressbarY"] = 200
+        self.progressbar_x_entry.delete(0,'end')
+        self.progressbar_y_entry.delete(0,'end')
         self.user_specific_setup(self.settings.settings,self.album_art)
 
 
@@ -362,7 +370,7 @@ class SpotifyAppGUI:
 
         #lable and setting
         self.progressbar_y_entry_var = ctk.IntVar(value=settings["ProgressbarY"])
-        self.progressbar_y_lable = ctk.CTkLabel(self.xy_frame, text="X: {progressbar_y_entry_var}", corner_radius=10, width=50, height=20, font=("Arial", 16))
+        self.progressbar_y_lable = ctk.CTkLabel(self.xy_frame, text="Y: {progressbar_y_entry_var}", corner_radius=10, width=50, height=20, font=("Arial", 16))
         self.progressbar_y_entry = ctk.CTkEntry(self.xy_frame)
         
         #location y settings
@@ -446,6 +454,8 @@ class SpotifyAppGUI:
         print(app_settings["brightness_factor"])
         getting_mean_color = Calculations()
         blank = ctk.CTkImage(Image.new('RGBA', (100, 100), (255, 0, 0, 0)))
+        self.progressbar_x_lable.configure(text=f"X: {app_settings["ProgressbarX"]}")
+        self.progressbar_y_lable.configure(text=f"Y: {app_settings["ProgressbarY"]}")
 
         if app_settings["background"] == "Minimalistic with contrast":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 1, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
@@ -521,18 +531,13 @@ class SpotifyAppGUI:
         self.current_time = datetime.datetime.now()
         self.clock.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02}  ")
         self.date.configure(text=f"{self.current_time.month:02}/{self.current_time.day:02}  ")
-        self.tempx = app.settings.settings["ProgressbarX"]
-        self.tempy = app.settings.settings["ProgressbarY"]
-        self.progressbar_x_lable.configure(text=f"x: {self.tempx}")
-        self.progressbar_y_lable.configure(text=f"x: {self.tempy}")
 
 
         if self.current_frame == self.window_home:
             self.home_window_image.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02} \n{self.current_time.month:02}/{self.current_time.day:02}-{self.current_time.year}")
         try:
             self.current_playback = self.sp.sp.current_playback()
-            if self.current_playback:   
-                self.current_time = datetime.datetime.now() 
+            if self.current_playback:
                 artists = ", ".join(artist["name"] for artist in self.current_playback["item"]["artists"])
                 self.previous_track_button.configure(image=self.button_last_image)
                 self.next_track_button.configure(image=self.button_next_image)
