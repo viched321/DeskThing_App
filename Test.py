@@ -144,6 +144,7 @@ class SpotifyAppGUI:
         self.settings = app_settings
         self.base_folder = Path(r"ButtonImages")
         self.current_song_info = {"album_art": self.load_and_resize_image(image_name="add_image.png", size=(20,20)), "song_name": "", "artists": ""}
+        self.album_art = self.current_song_info["album_art"]
         #cutomTKinter
         self.values = ["window_setting1", "window_setting2", "window_setting3", "window_setting4"]
         self.current_frame = None
@@ -186,19 +187,14 @@ class SpotifyAppGUI:
         self.setup_ui_window_home()
         self.user_specific_setup(app_settings.settings,self.current_song_info["album_art"])
         self.show_frame(self.window_home)
-        print("User-specific setup completed.")
 
 
     def load_and_resize_image(self, image_name, size):
         image_path = self.base_folder / image_name
         return Image.open(image_path).resize(size)
 
-    def optionmenu_callback(self,selected_option):
-        print(f"Selected option: {selected_option}")
-
     def optionmenu_callback_background(self,selected_option):
         self.settings.settings["background"] = selected_option
-        print(f"Selected option: {selected_option}")
         self.user_specific_setup(self.settings.settings,self.album_art)
         
     def optionmenu_callback_date_and_time(self, selected_option):
@@ -218,17 +214,14 @@ class SpotifyAppGUI:
     
     def slider_red(self, selected_option):
         self.settings.settings["red_factor"] = selected_option
-        print(selected_option)
         self.user_specific_setup(app_settings.settings, self.album_art)
 
     def slider_green(self, selected_option):
         self.settings.settings["green_factor"] = selected_option
-        print(selected_option)
         self.user_specific_setup(app_settings.settings, self.album_art)
     
     def slider_blue(self, selected_option):
         self.settings.settings["blue_factor"] = selected_option
-        print(selected_option)
         self.user_specific_setup(app_settings.settings, self.album_art)
         
     def save_the_settings(self):
@@ -243,7 +236,6 @@ class SpotifyAppGUI:
 
     def optionmenu_callback_button_preference(self,selected_option):
         self.settings.settings["ButtonPreference"] = selected_option
-        print(f"Selected option: {selected_option}")
         self.user_specific_setup(self.settings.settings,self.album_art)
     
     def going_homescreen(self):
@@ -265,7 +257,6 @@ class SpotifyAppGUI:
             self.settings.settings["ProgressbarX"] = x_input
         if(y_input > 0):
             self.settings.settings["ProgressbarY"] = y_input
-        print(self.progressbar_y_entry.get())
         self.user_specific_setup(self.settings.settings,self.album_art)
 
     
@@ -451,7 +442,6 @@ class SpotifyAppGUI:
         self.progress_bar_slider.place(x=timer_bar_locationX+30, y=timer_bar_locationY+10)
 
     def user_specific_setup(self, app_settings, image):
-        print(app_settings["brightness_factor"])
         getting_mean_color = Calculations()
         blank = ctk.CTkImage(Image.new('RGBA', (100, 100), (255, 0, 0, 0)))
         self.progressbar_x_lable.configure(text=f"X: {app_settings["ProgressbarX"]}")
@@ -507,17 +497,16 @@ class SpotifyAppGUI:
 
             
         #Chance to toggle progress bar on and off work in progress
-        """
+
         if app_settings["progressbar"] == "No progress bar":
-            self.progress_bar_slider.pack_forget()
-            self.song_time_played.pack_forget()
-            self.song_time_total.pack_forget()
+            self.progress_bar_slider.place_forget()
+            self.song_time_played.place_forget()
+            self.song_time_total.place_forget()
             
         elif app_settings["progressbar"]=="Progress bar":
             self.progress_bar_slider.place(x=333, y=229)      
             self.song_time_played.place(x=307, y=220)
             self.song_time_total.place(x=700, y=220)
-            """
             
     
 
@@ -584,9 +573,7 @@ class SpotifyAppGUI:
         self.window_player.after(100, self.update_display)
 
     def run(self):
-        print("configure display")
         self.update_display()
-        print("Displayed")
         self.root.mainloop()
 
 if __name__ == "__main__":
