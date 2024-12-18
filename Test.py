@@ -454,8 +454,8 @@ class SpotifyAppGUI:
         print(app_settings["brightness_factor"])
         getting_mean_color = Calculations()
         blank = ctk.CTkImage(Image.new('RGBA', (100, 100), (255, 0, 0, 0)))
-        self.progressbar_x_lable.configure(text=f"X: {app_settings["ProgressbarX"]}")
-        self.progressbar_y_lable.configure(text=f"Y: {app_settings["ProgressbarY"]}")
+        self.progressbar_x_lable.configure(text=f'X: {app_settings["ProgressbarX"]}')
+        self.progressbar_y_lable.configure(text=f'Y: {app_settings["ProgressbarY"]}')
 
         if app_settings["background"] == "Minimalistic with contrast":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 1, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
