@@ -187,6 +187,15 @@ class SpotifyAppGUI:
         self.setup_ui_window_home()
         self.user_specific_setup(app_settings.settings,self.current_song_info["album_art"])
         self.show_frame(self.window_home)
+        print("User-specific setup completed.")
+
+    def crop_background_album_image(self):
+        self.background_album_image # the size is 900x900 px, position is now, position is -100, -100
+        #first två labels are placed with height=50, width=480
+        #label named song_label is placed x=320 and  y = 60
+        #label named 
+
+
 
 
     def load_and_resize_image(self, image_name, size):
@@ -388,17 +397,23 @@ class SpotifyAppGUI:
         self.background_cover_art_size: tuple = (900,900)
         self.background_cover_art_label = ctk.CTkLabel(self.window_player, text="", width=self.background_cover_art_size[0], height=self.background_cover_art_size[1])
         self.background_cover_art_label.place(x=-100, y=-100)
-        
+
+        """
+        #background for cover name and progressbar
+        self.button_background_label = ctk.CTkLabel(master=self.window_player,width=300,height=110, text="", corner_radius=50)
+        self.button_background_label.place(x=310,y=50)
+        """
+
         self.cover_art_size: tuple = (250,250)
         self.cover_art_label = ctk.CTkLabel(self.window_player, text="", fg_color="transparent", corner_radius=0, width=self.cover_art_size[0], height=self.cover_art_size[1])
         self.cover_art_label.place(x=20, y=20)
 
         #Text label setup
-        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w",fg_color="transparent",bg_color="transparent")
+        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w",fg_color="transparent",bg_color="transparent", height=50, width=480)
         self.song_label.place(x=320, y=60)
 
         #artist lable
-        self.artist_label = ctk.CTkLabel(self.window_player,width=1,height=1, text="", font=("Arial", 20), text_color="white", anchor="w",bg_color="transparent",fg_color="transparent")
+        self.artist_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 20), text_color="white", anchor="w",bg_color="transparent",fg_color="transparent", height=50, width=480)
         self.artist_label.place(x=320, y=120)
 
         #song timer
@@ -430,6 +445,7 @@ class SpotifyAppGUI:
         
         self.home_house_button = ctk.CTkButton(self.window_player,text="",image=self.button_home_icon, width=20,height=20,command=self.going_homescreen, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.home_house_button.place(x=740, y=1)
+
 
         #Progress Slider setup
         self.progress_bar_slider = ctk.CTkSlider(self.window_player, progress_color="white",
@@ -497,16 +513,18 @@ class SpotifyAppGUI:
 
             
         #Chance to toggle progress bar on and off work in progress
-
+        
         if app_settings["progressbar"] == "No progress bar":
             self.progress_bar_slider.place_forget()
             self.song_time_played.place_forget()
             self.song_time_total.place_forget()
+
             
         elif app_settings["progressbar"]=="Progress bar":
             self.progress_bar_slider.place(x=333, y=229)      
             self.song_time_played.place(x=307, y=220)
             self.song_time_total.place(x=700, y=220)
+
             
     
 
@@ -555,6 +573,7 @@ class SpotifyAppGUI:
                         self.song_time_total.configure(text=f"{duration_ms//60000}:{int((duration_ms%60000)/1000):02}")
                         background_album_art_darker = ImageEnhance.Brightness(self.album_art).enhance(0.5)
                         self.background_album_image = ctk.CTkImage(background_album_art_darker, size=self.background_cover_art_size)
+                        self.crop_background_album_image()
                         self.user_specific_setup(app_settings.settings, self.album_art)
                 except Exception as e:
                     print(f"oijdsajoioijdsajwqdiowqj updating display: {e}")
