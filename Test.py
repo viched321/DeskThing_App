@@ -10,6 +10,8 @@ import numpy as np
 from pathlib import Path
 import json
 import datetime
+import threading
+import time
 
 class SpotifyController:
     def __init__(self):
@@ -140,7 +142,6 @@ class SpotifyAppGUI:
         self.image_data = self.image_data.resize((800, 480))
         self.home_image = ctk.CTkImage(self.image_data, size=(800,480))
         self.sp = spotify_controller
-        self.current_playback = None
         self.settings = app_settings
         self.base_folder = Path(r"ButtonImages")
         self.current_song_info = {"album_art": self.load_and_resize_image(image_name="add_image.png", size=(20,20)), "song_name": "", "artists": ""}
@@ -189,11 +190,31 @@ class SpotifyAppGUI:
         self.show_frame(self.window_home)
         print("User-specific setup completed.")
 
+
+        #threading
+        self.current_playback = None
+        self.should_run = True
+        # Start background thread
+        self.playback_thread = threading.Thread(target=self.update_playback, daemon=True)
+        self.playback_thread.start()
+
+
+    def update_playback(self):
+        while self.should_run:
+            try:
+                self.current_playback = self.sp.sp.current_playback()
+                time.sleep(0.5)  # Avoid too frequent API calls
+            except Exception as e:
+                print(f"Error updating playback: {e}")
+                time.sleep(0.5)
+        
     def crop_background_album_image(self):
         self.background_album_image # the size is 900x900 px, position is now, position is -100, -100
         #first två labels are placed with height=50, width=480
         #label named song_label is placed x=320 and  y = 60
-        #label named 
+        #label named
+
+        
 
 
 
@@ -543,7 +564,6 @@ class SpotifyAppGUI:
         if self.current_frame == self.window_home:
             self.home_window_image.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02} \n{self.current_time.month:02}/{self.current_time.day:02}-{self.current_time.year}")
         try:
-            self.current_playback = self.sp.sp.current_playback()
             if self.current_playback:
                 artists = ", ".join(artist["name"] for artist in self.current_playback["item"]["artists"])
                 self.previous_track_button.configure(image=self.button_last_image)
