@@ -210,8 +210,8 @@ class SpotifyAppGUI:
         
     def crop_background_album_image(self):
         self.background_album_image # the size is 900x900 px, position is now, position is -100, -100
-        #first två labels are placed with height=50, width=480
-        #label named song_label is placed x=320 and  y = 60
+        #first två labels are placed with height=60, and second is height 50 both with width=480
+        #label named song_label is placed x=320 and y = 60
         #label named
 
         
@@ -430,7 +430,7 @@ class SpotifyAppGUI:
         self.cover_art_label.place(x=20, y=20)
 
         #Text label setup
-        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w",fg_color="transparent",bg_color="transparent", height=50, width=480)
+        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w",fg_color="transparent",bg_color="transparent", height=60, width=480)
         self.song_label.place(x=320, y=60)
 
         #artist lable
