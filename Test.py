@@ -15,10 +15,13 @@ import time
 
 class SpotifyController:
     def __init__(self):
-        self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=config.CLIENT_ID,
-                                               client_secret=config.CLIENT_SECRET,
-                                               redirect_uri=config.REDIRECT_URI,
-                                               scope=config.SCOPE))
+        self.config_file = "config.json"
+        with open(self.config_file,"r") as file:
+            config = json.load(file)
+        self.sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=config["CLIENT_ID"],
+                                               client_secret=config["CLIENT_SECRET"],
+                                               redirect_uri=config["REDIRECT_URI"],
+                                               scope=config["SCOPE"]))
 
     def get_current_playback(self):
         return self.sp.current_playback()
@@ -575,25 +578,20 @@ class SpotifyAppGUI:
             self.artist_label.configure(image="")
             self.song_label.configure(image="")
             self.window_player.configure(fg_color=mean_color)
-            self.artist_label.configure(image=None)
-            self.song_label.configure(image=None)
-
+            
         elif app_settings["background"] == "Minimalistic":
             mean_color = getting_mean_color.get_mean_color_from_center(self.album_art, 2, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
             self.background_cover_art_label.configure(image=blank)
             self.artist_label.configure(image="")
             self.song_label.configure(image="")
             self.window_player.configure(fg_color=mean_color)
-            self.artist_label.configure(image=None)
-            self.song_label.configure(image=None)
 
         elif app_settings["background"] == "Cover art":
             self.background_cover_art_label.configure(image=self.background_album_image)
             self.artist_label.configure(image=self.background_album_image_artist_crop)
             self.song_label.configure(image=self.background_album_image_song_crop)
             self.window_player.configure(fg_color="gray")
-            self.artist_label.configure(image=self.background_album_image_artist_crop)
-            self.song_label.configure(image=self.background_album_image_song_crop)
+
 
             
         if app_settings["datetime"] == "No time or date":

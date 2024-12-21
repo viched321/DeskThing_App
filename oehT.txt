@@ -1,3 +1,3 @@
-CLIENT_ID = '7cee3f35396347eb907f15db2e7cec9a'
-CLIENT_SECRET = 'e5ab3d0f69f44e2d83ecdcfd5d170aef'
-REDIRECT_URI = 'http://localhost:8080'
+CLIENT_ID : '7cee3f35396347eb907f15db2e7cec9a',
+CLIENT_SECRET : 'e5ab3d0f69f44e2d83ecdcfd5d170aef',
+REDIRECT_URI : 'http://localhost:8080'
