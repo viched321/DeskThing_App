@@ -157,6 +157,69 @@ class SpotifyAppGUI:
         # Bind the Escape key to exit full-screen mode
         self.root.bind("<Escape>", self.exit_fullscreen)
 
+        #all button locations and lable locations
+        self.timer_bar_locationX= 10
+        self.timer_bar_locationY= 10
+
+        self.button_image_size=((50,50))
+        self.button_size=((50,50))
+        self.addbutton_size=((20,20))
+
+        # Background cover art size and position
+        self.background_cover_art_size: tuple = (900, 900)
+        self.background_cover_art_x = -100
+        self.background_cover_art_y = -250
+
+        # Cover art size and position
+        self.cover_art_size: tuple = (250, 250)
+        self.cover_art_x = 20
+        self.cover_art_y = 20
+
+        # Song label position and size
+        self.song_label_x = 320
+        self.song_label_y = 60
+        self.song_label_width = 480
+        self.song_label_height = 60
+
+        # Artist label position and size
+        self.artist_label_x = 320
+        self.artist_label_y = 120
+        self.artist_label_width = 480
+        self.artist_label_height = 50
+
+        # Song timer positions
+        self.song_time_total_x_offset = 400
+        self.song_time_played_x = self.timer_bar_locationX
+        self.song_time_played_y = self.timer_bar_locationY
+        self.song_time_total_x = self.timer_bar_locationX + self.song_time_total_x_offset
+        self.song_time_total_y = self.timer_bar_locationY
+
+        # Clock and date positions
+        self.clock_x = 762
+        self.clock_y = 440
+        self.date_x = 762
+        self.date_y = 460
+
+        # Button positions
+        self.previous_track_button_x = 250
+        self.previous_track_button_y = 370
+        self.pause_or_play_button_x = 350
+        self.pause_or_play_button_y = 370
+        self.next_track_button_x = 450
+        self.next_track_button_y = 370
+        self.settings_wheel_button_x = 770
+        self.settings_wheel_button_y = 1
+        self.home_house_button_x = 740
+        self.home_house_button_y = 1
+
+        # Progress bar slider position
+        self.progress_bar_slider_x = self.timer_bar_locationX + 30
+        self.progress_bar_slider_y = self.timer_bar_locationY + 10
+
+        # Offset values
+        self.offset_x = 100
+        self.offset_y = 250
+
 
 
         ctk.set_appearance_mode("dark")
@@ -202,12 +265,6 @@ class SpotifyAppGUI:
         self.playback_thread = threading.Thread(target=self.update_playback, daemon=True)
         self.playback_thread.start()
 
-        #all button locations and lable locations
-        self.timer_bar_locationX= 10
-        self.timer_bar_locationY= 10
-        self.button_image_size=((50,50))
-        self.addbutton_size=((20,20))
-
     def exit_fullscreen(self, event=None):
         self.attributes("-fullscreen", False)
 
@@ -229,17 +286,17 @@ class SpotifyAppGUI:
         #here is the album art url variable: album_art_url
         #here I want to load and rezise the image url
         
-        pil_image = self.background_album_art_darker.resize((900, 900))
+        pil_image = self.background_album_art_darker.resize(self.background_cover_art_size)
 
-        song_label_left = 320 + 100
-        song_label_right = 320 + 100 + 480
-        song_label_top = 60 + 250
-        song_label_bottom = 60 + 60 + 250
+        song_label_left = self.song_label_x + self.offset_x
+        song_label_right = self.song_label_x + self.offset_x + self.song_label_width
+        song_label_top = self.song_label_y + self.offset_y
+        song_label_bottom = self.song_label_y + self.song_label_height + self.offset_y
 
-        artist_label_left = 320 + 100
-        artist_label_right = 320 + 100 + 480
-        artist_label_top = 120 + 250
-        artist_label_bottom = 120 + 50 + 250
+        artist_label_left = self.artist_label_x + self.offset_x
+        artist_label_right = self.artist_label_x + self.offset_x + self.artist_label_width
+        artist_label_top = self.artist_label_y + self.offset_y
+        artist_label_bottom = self.artist_label_y + self.artist_label_height + self.offset_y    
 
         # Ensure self.background_album_image is a PIL image
         pil_image = pil_image  # Assuming self.background_album_image is a PIL image
@@ -450,75 +507,60 @@ class SpotifyAppGUI:
         self.save_settings_button.pack(side="top",fill="x",padx=300,pady=10)
 
     def setup_ui_window_player(self):
-        #Cover art label setup
-        self.background_cover_art_size: tuple = (900,900)
+
+        # Cover art label setup
         self.background_cover_art_label = ctk.CTkLabel(self.window_player, text="", width=self.background_cover_art_size[0], height=self.background_cover_art_size[1])
-        self.background_cover_art_label.place(x=-100, y=-250)
+        self.background_cover_art_label.place(x=self.background_cover_art_x, y=self.background_cover_art_y)
 
-        """
-        #background for cover name and progressbar
-        self.button_background_label = ctk.CTkLabel(master=self.window_player,width=300,height=110, text="", corner_radius=50)
-        self.button_background_label.place(x=310,y=50)
-        """
-
-        self.cover_art_size: tuple = (250,250)
         self.cover_art_label = ctk.CTkLabel(self.window_player, text="", fg_color="transparent", corner_radius=0, width=self.cover_art_size[0], height=self.cover_art_size[1])
-        self.cover_art_label.place(x=20, y=20)
+        self.cover_art_label.place(x=self.cover_art_x, y=self.cover_art_y)
 
-        #Text label setup
-        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w",fg_color="transparent",bg_color="transparent", height=60, width=480)
-        self.song_label.place(x=320, y=60)
+        # Text label setup
+        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w", fg_color="transparent", bg_color="transparent", height=60, width=480)
+        self.song_label.place(x=self.song_label_x, y=self.song_label_y)
 
-        #artist lable
-        self.artist_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 20), text_color="white", anchor="w",bg_color="transparent",fg_color="transparent", height=50, width=480)
-        self.artist_label.place(x=320, y=120)
+        self.artist_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 20), text_color="white", anchor="w", bg_color="transparent", fg_color="transparent", height=50, width=480)
+        self.artist_label.place(x=self.artist_label_x, y=self.artist_label_y)
 
-        #song timer
-        self.song_time_played = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent",fg_color="transparent")
-        self.song_time_played.place(x=self.timer_bar_locationX, y=self.timer_bar_locationY)
+        # Song timer
+        self.song_time_played = ctk.CTkLabel(self.window_player, text="", font=("Arial", 10, "bold"), text_color="white", anchor="w", bg_color="transparent", fg_color="transparent")
+        self.song_time_played.place(x=self.song_time_played_x, y=self.song_time_played_y)
 
-        self.song_time_total_x_offset = 400
-        self.song_time_total = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent",fg_color="transparent")
-        self.song_time_total.place(x=self.timer_bar_locationX+self.song_time_total_x_offset, y=self.timer_bar_locationY)
-        
-        self.clock_x = 762
-        self.clock_y = 440
-        self.clock = ctk.CTkLabel(self.window_player, text="", font=("Arial",15,"bold"),text_color="white",bg_color="transparent")
-        self.clock.place(x=self.clock_x,y=self.clock_y)
-        
-        self.date_x = 762
-        self.date_y = 460
-        self.date = ctk.CTkLabel(self.window_player, text="", font=("Arial",15,"bold"),text_color="white",bg_color="transparent")
-        self.date.place(x=self.date_x,y=self.date_y)
+        self.song_time_total = ctk.CTkLabel(self.window_player, text="", font=("Arial", 10, "bold"), text_color="white", anchor="w", bg_color="transparent", fg_color="transparent")
+        self.song_time_total.place(x=self.song_time_total_x, y=self.song_time_total_y)
 
-        #Button setup
-        self.privious_track_button_x = 250
-        self.privious_track_button_y = 370
-        self.previous_track_button =ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.previous_track, fg_color="transparent", bg_color ="transparent",hover_color="#FFFFFF")
-        self.previous_track_button.place(x=self.privious_track_button_x, y=self.privious_track_button_y)
+        # Clock and date
+        self.clock = ctk.CTkLabel(self.window_player, text="", font=("Arial", 15, "bold"), text_color="white", bg_color="transparent")
+        self.clock.place(x=self.clock_x, y=self.clock_y)
 
-        self.pause_or_play_button = ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.pause_or_play,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
-        self.pause_or_play_button.place(x=350,y=370)
+        self.date = ctk.CTkLabel(self.window_player, text="", font=("Arial", 15, "bold"), text_color="white", bg_color="transparent")
+        self.date.place(x=self.date_x, y=self.date_y)
 
-        self.next_track_button = ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.next_track,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
-        self.next_track_button.place(x=450, y=370)
+        # Button setup
+        self.previous_track_button = ctk.CTkButton(self.window_player, text="", width=self.button_size[0], height=self.button_size[1], command=self.sp.previous_track, fg_color="transparent", bg_color="transparent", hover_color="#FFFFFF")
+        self.previous_track_button.place(x=self.previous_track_button_x, y=self.previous_track_button_y)
 
-        self.settings_wheel_button =ctk.CTkButton(self.window_player,text="",image=self.button_settings_icon,width=20,height=20,command=lambda: self.show_frame(self.window_settings), fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
-        self.settings_wheel_button.place(x=770, y=1)
-        
-        self.home_house_button = ctk.CTkButton(self.window_player,text="",image=self.button_home_icon, width=20,height=20,command=self.going_homescreen, fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
-        self.home_house_button.place(x=740, y=1)
+        self.pause_or_play_button = ctk.CTkButton(self.window_player, text="", width=self.button_size[0], height=self.button_size[1], command=self.sp.pause_or_play, fg_color="transparent", bg_color="transparent", hover_color="#FFFFFF")
+        self.pause_or_play_button.place(x=self.pause_or_play_button_x, y=self.pause_or_play_button_y)
 
+        self.next_track_button = ctk.CTkButton(self.window_player, text="", width=self.button_size[0], height=self.button_size[1], command=self.sp.next_track, fg_color="transparent", bg_color="transparent", hover_color="#FFFFFF")
+        self.next_track_button.place(x=self.next_track_button_x, y=self.next_track_button_y)
 
-        #Progress Slider setup
+        self.settings_wheel_button = ctk.CTkButton(self.window_player, text="", image=self.button_settings_icon, width=20, height=20, command=lambda: self.show_frame(self.window_settings), fg_color="transparent", bg_color="transparent", hover_color="#FFFFFF")
+        self.settings_wheel_button.place(x=self.settings_wheel_button_x, y=self.settings_wheel_button_y)
+
+        self.home_house_button = ctk.CTkButton(self.window_player, text="", image=self.button_home_icon, width=20, height=20, command=self.going_homescreen, fg_color="transparent", bg_color="transparent", hover_color="#FFFFFF")
+        self.home_house_button.place(x=self.home_house_button_x, y=self.home_house_button_y)
+
+        # Progress Slider setup
         self.progress_bar_slider = ctk.CTkSlider(self.window_player, progress_color="white",
-                                    button_corner_radius=20,button_length=0,
-                                    button_color="white",button_hover_color="gray", 
-                                    bg_color="transparent",height = 11, 
-                                    width=360,border_width=0,
+                                    button_corner_radius=20, button_length=0,
+                                    button_color="white", button_hover_color="gray", 
+                                    bg_color="transparent", height=11, 
+                                    width=360, border_width=0,
                                     from_=0, to=1000, number_of_steps=1000, 
-                                    corner_radius=10,command=self.sp.slider_changed)
-        self.progress_bar_slider.place(x=timer_bar_locationX+30, y=timer_bar_locationY+10)
+                                    corner_radius=10, command=self.sp.slider_changed)
+        self.progress_bar_slider.place(x=self.progress_bar_slider_x, y=self.progress_bar_slider_y)
 
     def user_specific_setup(self, app_settings, image):
         getting_mean_color = Calculations()
