@@ -254,7 +254,9 @@ class SpotifyAppGUI:
         self.setup_ui_window_player()
         self.setup_ui_window_settings(app_settings.settings)
         self.setup_ui_window_home()
-        self.user_specific_setup(app_settings.settings,self.current_song_info["album_art"])
+
+        self.album_art = self.current_song_info["album_art"]
+        self.user_specific_setup(app_settings.settings)
         self.show_frame(self.window_home)
         print("User-specific setup completed.")
 
@@ -320,34 +322,35 @@ class SpotifyAppGUI:
 
     def optionmenu_callback_background(self,selected_option):
         self.settings.settings["background"] = selected_option
-        self.user_specific_setup(self.settings.settings,self.album_art)
+        self.crop_background_album_image()
+        self.user_specific_setup(self.settings.settings)
         
     def optionmenu_callback_date_and_time(self, selected_option):
         self.settings.settings["datetime"]=selected_option
-        self.user_specific_setup(self.settings.settings,self.album_art)
+        self.user_specific_setup(self.settings.settings)
         
     def optionmenu_callback_progress_bar(self,selected_option):
         self.settings.settings["progressbar"]=selected_option
-        self.user_specific_setup(self.settings.settings,self.album_art)
+        self.user_specific_setup(self.settings.settings)
     
     def optionmenu_callback_homescreen(self,selected_option):
         self.settings.settings["homescreen"]=selected_option
     
     def slider_Brightness(self, selected_option):
         self.settings.settings["brightness_factor"] = selected_option
-        self.user_specific_setup(app_settings.settings, self.album_art)
+        self.user_specific_setup(app_settings.settings)
     
     def slider_red(self, selected_option):
         self.settings.settings["red_factor"] = selected_option
-        self.user_specific_setup(app_settings.settings, self.album_art)
+        self.user_specific_setup(app_settings.settings)
 
     def slider_green(self, selected_option):
         self.settings.settings["green_factor"] = selected_option
-        self.user_specific_setup(app_settings.settings, self.album_art)
+        self.user_specific_setup(app_settings.settings)
     
     def slider_blue(self, selected_option):
         self.settings.settings["blue_factor"] = selected_option
-        self.user_specific_setup(app_settings.settings, self.album_art)
+        self.user_specific_setup(app_settings.settings)
         
     def save_the_settings(self):
         self.settings.save_settings()
@@ -361,8 +364,7 @@ class SpotifyAppGUI:
 
     def optionmenu_callback_button_preference(self,selected_option):
         self.settings.settings["ButtonPreference"] = selected_option
-        self.user_specific_setup(self.settings.settings,self.album_art)
-    
+        self.user_specific_setup(self.settings.settings)
     def going_homescreen(self):
         if self.current_playback == None:
             self.went_home = False
@@ -382,7 +384,7 @@ class SpotifyAppGUI:
             self.settings.settings["ProgressbarX"] = x_input
         if(y_input > 0):
             self.settings.settings["ProgressbarY"] = y_input
-        self.user_specific_setup(self.settings.settings,self.album_art)
+        self.user_specific_setup(self.settings.settings)
 
     
     def reset_xy(self):
@@ -390,7 +392,7 @@ class SpotifyAppGUI:
         self.settings.settings["ProgressbarY"] = 200
         self.progressbar_x_entry.delete(0,'end')
         self.progressbar_y_entry.delete(0,'end')
-        self.user_specific_setup(self.settings.settings,self.album_art)
+        self.user_specific_setup(self.settings.settings)
 
 
     def setup_ui_window_settings(self,settings):
@@ -561,28 +563,34 @@ class SpotifyAppGUI:
                                     corner_radius=10, command=self.sp.slider_changed)
         self.progress_bar_slider.place(x=self.progress_bar_slider_x, y=self.progress_bar_slider_y)
 
-    def user_specific_setup(self, app_settings, image):
+    def user_specific_setup(self, app_settings):
         getting_mean_color = Calculations()
         blank = ctk.CTkImage(Image.new('RGBA', (100, 100), (255, 0, 0, 0)))
         self.progressbar_x_lable.configure(text=f'X: {app_settings["ProgressbarX"]}')
         self.progressbar_y_lable.configure(text=f'Y: {app_settings["ProgressbarY"]}')
 
         if app_settings["background"] == "Minimalistic with contrast":
-            mean_color = getting_mean_color.get_mean_color_from_center(image, 1, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
+            mean_color = getting_mean_color.get_mean_color_from_center(self.album_art, 1, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
             self.background_cover_art_label.configure(image=blank)
             self.artist_label.configure(image="")
             self.song_label.configure(image="")
             self.window_player.configure(fg_color=mean_color)
+            self.artist_label.configure(image=None)
+            self.song_label.configure(image=None)
 
         elif app_settings["background"] == "Minimalistic":
-            mean_color = getting_mean_color.get_mean_color_from_center(image, 2, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
+            mean_color = getting_mean_color.get_mean_color_from_center(self.album_art, 2, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
             self.background_cover_art_label.configure(image=blank)
             self.artist_label.configure(image="")
             self.song_label.configure(image="")
             self.window_player.configure(fg_color=mean_color)
+            self.artist_label.configure(image=None)
+            self.song_label.configure(image=None)
 
         elif app_settings["background"] == "Cover art":
             self.background_cover_art_label.configure(image=self.background_album_image)
+            self.artist_label.configure(image=self.background_album_image_artist_crop)
+            self.song_label.configure(image=self.background_album_image_song_crop)
             self.window_player.configure(fg_color="gray")
             self.artist_label.configure(image=self.background_album_image_artist_crop)
             self.song_label.configure(image=self.background_album_image_song_crop)
@@ -663,6 +671,8 @@ class SpotifyAppGUI:
                         if app_settings.settings['homescreen']=='Go to the player':
                             if self.went_home == False:
                                 self.show_frame(self.window_player)
+
+                    #user specific settings            
                     if(app.settings.settings["ButtonPreference"]== "Default"):
                         self.pause_or_play_button.configure(image=self.button_pause_image)
                 else:
@@ -684,7 +694,7 @@ class SpotifyAppGUI:
                         self.background_album_art_darker = ImageEnhance.Brightness(self.album_art).enhance(0.7)
                         self.background_album_image = ctk.CTkImage(self.background_album_art_darker, size=self.background_cover_art_size)
                         self.crop_background_album_image()
-                        self.user_specific_setup(app_settings.settings, self.album_art)
+                        self.user_specific_setup(app_settings.settings)
                 except Exception as e:
                     print(f"updating display: {e}")
                 self.song_label.configure(text=self.current_playback["item"]["name"])
