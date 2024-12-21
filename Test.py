@@ -266,7 +266,7 @@ class SpotifyAppGUI:
         self.playback_thread.start()
 
     def exit_fullscreen(self, event=None):
-        self.attributes("-fullscreen", False)
+        self.root.attributes("-fullscreen", False)
 
     def update_playback(self):
         while self.should_run:
@@ -280,11 +280,10 @@ class SpotifyAppGUI:
 
     def crop_background_album_image(self):
         # the size is 900x900 px, position is now, position is -100, -100
-        # first två labels are placed with height=60, and second is height 50 both with width=480
+        # first two labels are placed with height=60, and second is height 50 both with width=480
         # label named song_label is placed x=320 and y = 60
         # label named artist_label is placed x=320 and y = 120
-        #here is the album art url variable: album_art_url
-        #here I want to load and rezise the image url
+
         
         pil_image = self.background_album_art_darker.resize(self.background_cover_art_size)
 
@@ -571,16 +570,23 @@ class SpotifyAppGUI:
         if app_settings["background"] == "Minimalistic with contrast":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 1, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
             self.background_cover_art_label.configure(image=blank)
+            self.artist_label.configure(image="")
+            self.song_label.configure(image="")
             self.window_player.configure(fg_color=mean_color)
 
         elif app_settings["background"] == "Minimalistic":
             mean_color = getting_mean_color.get_mean_color_from_center(image, 2, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
             self.background_cover_art_label.configure(image=blank)
+            self.artist_label.configure(image="")
+            self.song_label.configure(image="")
             self.window_player.configure(fg_color=mean_color)
 
         elif app_settings["background"] == "Cover art":
             self.background_cover_art_label.configure(image=self.background_album_image)
             self.window_player.configure(fg_color="gray")
+            self.artist_label.configure(image=self.background_album_image_artist_crop)
+            self.song_label.configure(image=self.background_album_image_song_crop)
+
             
         if app_settings["datetime"] == "No time or date":
             self.date.place(x=1000,y=460)
@@ -659,12 +665,6 @@ class SpotifyAppGUI:
                                 self.show_frame(self.window_player)
                     if(app.settings.settings["ButtonPreference"]== "Default"):
                         self.pause_or_play_button.configure(image=self.button_pause_image)
-
-                    #apply the background cover for artist lable and song lable
-                    if(app.settings.settings["background"] == "Cover art"):
-                        self.artist_label.configure(image=self.background_album_image_artist_crop)
-                        self.song_label.configure(image=self.background_album_image_song_crop)
-
                 else:
                     if(app.settings.settings["ButtonPreference"]== "Default"):
                         self.pause_or_play_button.configure(image=self.button_start_image)
