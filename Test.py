@@ -151,13 +151,16 @@ class SpotifyAppGUI:
         self.current_frame = None
         self.went_home = False
         self.root = ctk.CTk()
-        self.root.title("Spunkify")
+        self.root.title("DeskThing_App")
         self.root.geometry("800x480")
+        self.root.attributes("-fullscreen", True)
+        # Bind the Escape key to exit full-screen mode
+        self.root.bind("<Escape>", self.exit_fullscreen)
+
+
+
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("dark-blue")
-        #self.root.attributes("-fullscreen", True)
-        self.button_image_size=((50,50))
-        self.addbutton_size=((20,20))
         self.button_last_image = self.load_and_resize_image("last_button_not_hover.png", self.button_image_size)
         self.button_next_image = self.load_and_resize_image("skip_button_not_hover.png", self.button_image_size)
         self.button_pause_image = self.load_and_resize_image("pause_not_hover.png", self.button_image_size)
@@ -166,6 +169,8 @@ class SpotifyAppGUI:
         self.button_settings_icon = self.load_and_resize_image("settings_icon.png",(20,20))
         self.button_home_icon = self.load_and_resize_image("home_icon.png",(20,20))
         self.background_album_image = None
+        self.background_album_image_artist_crop = None  # Initialize the attribute
+        self.background_album_image_song_crop = None
 
 
         self.button_home_icon = ctk.CTkImage(light_image=self.button_home_icon,size= (20,20))
@@ -190,7 +195,6 @@ class SpotifyAppGUI:
         self.show_frame(self.window_home)
         print("User-specific setup completed.")
 
-
         #threading
         self.current_playback = None
         self.should_run = True
@@ -198,6 +202,14 @@ class SpotifyAppGUI:
         self.playback_thread = threading.Thread(target=self.update_playback, daemon=True)
         self.playback_thread.start()
 
+        #all button locations and lable locations
+        self.timer_bar_locationX= 10
+        self.timer_bar_locationY= 10
+        self.button_image_size=((50,50))
+        self.addbutton_size=((20,20))
+
+    def exit_fullscreen(self, event=None):
+        self.attributes("-fullscreen", False)
 
     def update_playback(self):
         while self.should_run:
@@ -208,11 +220,38 @@ class SpotifyAppGUI:
                 print(f"Error updating playback: {e}")
                 time.sleep(0.5)
         
+
     def crop_background_album_image(self):
-        self.background_album_image # the size is 900x900 px, position is now, position is -100, -100
-        #first två labels are placed with height=60, and second is height 50 both with width=480
-        #label named song_label is placed x=320 and y = 60
-        #label named
+        # the size is 900x900 px, position is now, position is -100, -100
+        # first två labels are placed with height=60, and second is height 50 both with width=480
+        # label named song_label is placed x=320 and y = 60
+        # label named artist_label is placed x=320 and y = 120
+        #here is the album art url variable: album_art_url
+        #here I want to load and rezise the image url
+        
+        pil_image = self.background_album_art_darker.resize((900, 900))
+
+        song_label_left = 320 + 100
+        song_label_right = 320 + 100 + 480
+        song_label_top = 60 + 250
+        song_label_bottom = 60 + 60 + 250
+
+        artist_label_left = 320 + 100
+        artist_label_right = 320 + 100 + 480
+        artist_label_top = 120 + 250
+        artist_label_bottom = 120 + 50 + 250
+
+        # Ensure self.background_album_image is a PIL image
+        pil_image = pil_image  # Assuming self.background_album_image is a PIL image
+
+        # Crop the image
+        artist_crop = pil_image.crop((artist_label_left, artist_label_top, artist_label_right, artist_label_bottom))
+        song_crop = pil_image.crop((song_label_left, song_label_top, song_label_right, song_label_bottom))
+
+        # Convert cropped images back to CTkImage
+        self.background_album_image_artist_crop = ctk.CTkImage(light_image=artist_crop, size=artist_crop.size)
+        self.background_album_image_song_crop = ctk.CTkImage(light_image=song_crop, size=song_crop.size)
+
 
         
 
@@ -411,13 +450,10 @@ class SpotifyAppGUI:
         self.save_settings_button.pack(side="top",fill="x",padx=300,pady=10)
 
     def setup_ui_window_player(self):
-        timer_bar_locationX= 10
-        timer_bar_locationY= 10
-
         #Cover art label setup
         self.background_cover_art_size: tuple = (900,900)
         self.background_cover_art_label = ctk.CTkLabel(self.window_player, text="", width=self.background_cover_art_size[0], height=self.background_cover_art_size[1])
-        self.background_cover_art_label.place(x=-100, y=-100)
+        self.background_cover_art_label.place(x=-100, y=-250)
 
         """
         #background for cover name and progressbar
@@ -439,21 +475,27 @@ class SpotifyAppGUI:
 
         #song timer
         self.song_time_played = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent",fg_color="transparent")
-        self.song_time_played.place(x=timer_bar_locationX, y=timer_bar_locationY)
+        self.song_time_played.place(x=self.timer_bar_locationX, y=self.timer_bar_locationY)
 
+        self.song_time_total_x_offset = 400
         self.song_time_total = ctk.CTkLabel(self.window_player, text="",font=("Arial",10,"bold"),text_color="white",anchor="w",bg_color="transparent",fg_color="transparent")
-        self.song_time_total.place(x=timer_bar_locationX+400, y=timer_bar_locationY)
+        self.song_time_total.place(x=self.timer_bar_locationX+self.song_time_total_x_offset, y=self.timer_bar_locationY)
         
+        self.clock_x = 762
+        self.clock_y = 440
         self.clock = ctk.CTkLabel(self.window_player, text="", font=("Arial",15,"bold"),text_color="white",bg_color="transparent")
-        self.clock.place(x=762,y=440)
+        self.clock.place(x=self.clock_x,y=self.clock_y)
         
+        self.date_x = 762
+        self.date_y = 460
         self.date = ctk.CTkLabel(self.window_player, text="", font=("Arial",15,"bold"),text_color="white",bg_color="transparent")
-        self.date.place(x=762,y=460)
+        self.date.place(x=self.date_x,y=self.date_y)
 
         #Button setup
-        self.button_size = ((1,1))
+        self.privious_track_button_x = 250
+        self.privious_track_button_y = 370
         self.previous_track_button =ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.previous_track, fg_color="transparent", bg_color ="transparent",hover_color="#FFFFFF")
-        self.previous_track_button.place(x=250, y=370)
+        self.previous_track_button.place(x=self.privious_track_button_x, y=self.privious_track_button_y)
 
         self.pause_or_play_button = ctk.CTkButton(self.window_player,text="",width=self.button_size[0],height=self.button_size[1],command=self.sp.pause_or_play,fg_color="transparent",bg_color="transparent",hover_color="#FFFFFF")
         self.pause_or_play_button.place(x=350,y=370)
@@ -575,6 +617,12 @@ class SpotifyAppGUI:
                                 self.show_frame(self.window_player)
                     if(app.settings.settings["ButtonPreference"]== "Default"):
                         self.pause_or_play_button.configure(image=self.button_pause_image)
+
+                    #apply the background cover for artist lable and song lable
+                    if(app.settings.settings["background"] == "Cover art"):
+                        self.artist_label.configure(image=self.background_album_image_artist_crop)
+                        self.song_label.configure(image=self.background_album_image_song_crop)
+
                 else:
                     if(app.settings.settings["ButtonPreference"]== "Default"):
                         self.pause_or_play_button.configure(image=self.button_start_image)
@@ -583,20 +631,20 @@ class SpotifyAppGUI:
                 #Only when song changes
                 try:
                     if self.current_playback["item"]["name"] != self.current_song_info["song_name"]:
-                        album_art_url = self.current_playback["item"]["album"]["images"][0]["url"]
-                        response = requests.get(album_art_url)
+                        self.album_art_url = self.current_playback["item"]["album"]["images"][0]["url"]
+                        response = requests.get(self.album_art_url)
                         self.album_art = Image.open(BytesIO(response.content))
                         self.album_image = ctk.CTkImage(self.album_art, size=self.cover_art_size)
                         self.current_song_info.update({"album_art": self.album_image, "song_name": self.current_playback["item"]["name"], "artists": artists})
                         duration_ms = self.current_playback["item"]['duration_ms']
                         self.progress_bar_slider.configure(to=duration_ms)
                         self.song_time_total.configure(text=f"{duration_ms//60000}:{int((duration_ms%60000)/1000):02}")
-                        background_album_art_darker = ImageEnhance.Brightness(self.album_art).enhance(0.5)
-                        self.background_album_image = ctk.CTkImage(background_album_art_darker, size=self.background_cover_art_size)
+                        self.background_album_art_darker = ImageEnhance.Brightness(self.album_art).enhance(0.7)
+                        self.background_album_image = ctk.CTkImage(self.background_album_art_darker, size=self.background_cover_art_size)
                         self.crop_background_album_image()
                         self.user_specific_setup(app_settings.settings, self.album_art)
                 except Exception as e:
-                    print(f"oijdsajoioijdsajwqdiowqj updating display: {e}")
+                    print(f"updating display: {e}")
                 self.song_label.configure(text=self.current_playback["item"]["name"])
                 self.artist_label.configure(text=artists)
                 self.cover_art_label.configure(image=self.current_song_info["album_art"])
