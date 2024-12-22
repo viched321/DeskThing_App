@@ -5,7 +5,6 @@ from PIL import Image, ImageEnhance
 from io import BytesIO
 import requests
 from spotipy.oauth2 import SpotifyOAuth
-import config
 import numpy as np
 from pathlib import Path
 import json
@@ -179,13 +178,13 @@ class SpotifyAppGUI:
         self.cover_art_y = 20
 
         # Song label position and size
-        self.song_label_x = 320
+        self.song_label_x = 200
         self.song_label_y = 60
         self.song_label_width = 480
         self.song_label_height = 60
 
         # Artist label position and size
-        self.artist_label_x = 320
+        self.artist_label_x = 200
         self.artist_label_y = 120
         self.artist_label_width = 480
         self.artist_label_height = 50
@@ -198,9 +197,9 @@ class SpotifyAppGUI:
         self.song_time_total_y = self.timer_bar_locationY
 
         # Clock and date positions
-        self.clock_x = 762
+        self.clock_x = 740
         self.clock_y = 440
-        self.date_x = 762
+        self.date_x = 740
         self.date_y = 460
 
         # Button positions
@@ -220,8 +219,8 @@ class SpotifyAppGUI:
         self.progress_bar_slider_y = self.timer_bar_locationY + 10
 
         # Offset values
-        self.offset_x = 100
-        self.offset_y = 250
+        self.offset_x = -60
+        self.offset_y = 190
 
 
 
@@ -237,7 +236,7 @@ class SpotifyAppGUI:
         self.background_album_image = None
         self.background_album_image_artist_crop = None  # Initialize the attribute
         self.background_album_image_song_crop = None
-
+        self.background_album_art_darker = None
 
         self.button_home_icon = ctk.CTkImage(light_image=self.button_home_icon,size= (20,20))
         self.button_settings_icon =ctk.CTkImage(light_image=self.button_settings_icon,size= (20,20))
@@ -257,11 +256,22 @@ class SpotifyAppGUI:
         self.setup_ui_window_player()
         self.setup_ui_window_settings(app_settings.settings)
         self.setup_ui_window_home()
+        self.widget_coordinates = {}
 
         self.album_art = self.current_song_info["album_art"]
         self.user_specific_setup(app_settings.settings)
         self.show_frame(self.window_home)
         print("User-specific setup completed.")
+
+        self.widget_offsets = {
+            self.song_label._name: (0, 220),
+            self.artist_label._name: (0, 190),
+            self.song_time_played._name: (-54, 140),
+            self.song_time_total._name: (-250, 140),
+            self.clock._name: (-270, 30),
+            self.date._name: (-270, 20),
+
+        }
 
         #threading
         self.current_playback = None
@@ -283,38 +293,79 @@ class SpotifyAppGUI:
                 time.sleep(0.5)
         
 
-    def crop_background_album_image(self):
+    #def crop_background_album_image(self):
         # the size is 900x900 px, position is now, position is -100, -100
         # first two labels are placed with height=60, and second is height 50 both with width=480
         # label named song_label is placed x=320 and y = 60
         # label named artist_label is placed x=320 and y = 120
 
         
-        pil_image = self.background_album_art_darker.resize(self.background_cover_art_size)
+        #pil_image = self.background_album_art_darker.resize(self.background_cover_art_size)
 
-        song_label_left = self.song_label_x + self.offset_x
-        song_label_right = self.song_label_x + self.offset_x + self.song_label_width
-        song_label_top = self.song_label_y + self.offset_y
-        song_label_bottom = self.song_label_y + self.song_label_height + self.offset_y
+        #song_label_left = self.song_label_x + self.offset_x
+        #song_label_right = self.song_label_x + self.offset_x + self.song_label_width
+        #song_label_top = self.song_label_y + self.offset_y
+        #song_label_bottom = self.song_label_y + self.song_label_height + self.offset_y
 
-        artist_label_left = self.artist_label_x + self.offset_x
-        artist_label_right = self.artist_label_x + self.offset_x + self.artist_label_width
-        artist_label_top = self.artist_label_y + self.offset_y
-        artist_label_bottom = self.artist_label_y + self.artist_label_height + self.offset_y    
+        #artist_label_left = self.artist_label_x + self.offset_x
+        #artist_label_right = self.artist_label_x + self.offset_x + self.artist_label_width
+        #artist_label_top = self.artist_label_y + self.offset_y
+        #artist_label_bottom = self.artist_label_y + self.artist_label_height + self.offset_y    
 
         # Ensure self.background_album_image is a PIL image
-        pil_image = pil_image  # Assuming self.background_album_image is a PIL image
+        #pil_image = pil_image  # Assuming self.background_album_image is a PIL image
 
         # Crop the image
-        artist_crop = pil_image.crop((artist_label_left, artist_label_top, artist_label_right, artist_label_bottom))
-        song_crop = pil_image.crop((song_label_left, song_label_top, song_label_right, song_label_bottom))
+        #artist_crop = pil_image.crop((artist_label_left, artist_label_top, artist_label_right, artist_label_bottom))
+        #song_crop = pil_image.crop((song_label_left, song_label_top, song_label_right, song_label_bottom))
 
         # Convert cropped images back to CTkImage
-        self.background_album_image_artist_crop = ctk.CTkImage(light_image=artist_crop, size=artist_crop.size)
-        self.background_album_image_song_crop = ctk.CTkImage(light_image=song_crop, size=song_crop.size)
-
-
+        #self.background_album_image_artist_crop = ctk.CTkImage(light_image=artist_crop, size=artist_crop.size)
+        #self.background_album_image_song_crop = ctk.CTkImage(light_image=song_crop, size=song_crop.size)
+    def clear_widget(self, widget):
+        widget_name = widget._name
+        if widget_name in self.widget_coordinates:
+            del self.widget_coordinates[widget_name]
+        widget.configure(image="")
+    def get_widget_coordinates(self, widget):
+        widget_name = widget._name  # Get the widget's name
+        if widget_name in self.widget_coordinates:
+            return self.widget_coordinates[widget_name]
         
+        widget.update_idletasks()  # Ensure the widget's geometry is updated
+        x = widget.winfo_x()
+        y = widget.winfo_y()
+        width = widget.winfo_width()
+        height = widget.winfo_height()
+        top_left = (x, y)
+        bottom_right = (x + width, y + height)
+        
+        # Store the coordinates in the dictionary
+        self.widget_coordinates[widget_name] = (top_left, bottom_right)
+        
+        return top_left, bottom_right
+
+    def crop_background_album_image(self, widget):
+        top_left, bottom_right = self.get_widget_coordinates(widget)
+        if self.background_album_art_darker is None:
+            return
+        pil_image = self.background_album_art_darker.resize(self.background_cover_art_size)  # Assuming self.background_album_image is a PIL image
+        # Crop the image
+        widget_name = widget._name
+        offset_x, offset_y = self.widget_offsets.get(widget_name, (0, 0))
+        widget_crop = pil_image.crop((top_left[0]+ offset_x, top_left[1]+offset_y, bottom_right[0]+offset_x, bottom_right[1]+offset_y))
+        print(top_left[0], top_left[1], bottom_right[0], bottom_right[1])
+        print(widget_crop.size)  
+        # Convert cropped image back to CTkImage
+        widget_crop_image = ctk.CTkImage(light_image=widget_crop, size=widget_crop.size)
+
+        # Create a new variable with the widget's name and "_crop"
+        widget_name = widget._name  # Get the widget's name
+        variable_name = f"{widget_name}_crop"
+        setattr(self, variable_name, widget_crop_image)
+
+        # Configure the widget with the cropped image
+        widget.configure(image=widget_crop_image)
 
 
 
@@ -325,7 +376,6 @@ class SpotifyAppGUI:
 
     def optionmenu_callback_background(self,selected_option):
         self.settings.settings["background"] = selected_option
-        self.crop_background_album_image()
         self.user_specific_setup(self.settings.settings)
         
     def optionmenu_callback_date_and_time(self, selected_option):
@@ -520,24 +570,24 @@ class SpotifyAppGUI:
         self.cover_art_label.place(x=self.cover_art_x, y=self.cover_art_y)
 
         # Text label setup
-        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor="w", fg_color="transparent", bg_color="transparent", height=60, width=480)
+        self.song_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 30, "bold"), text_color="white", anchor=ctk.W, fg_color="transparent", bg_color="transparent", height=60, width=480)
         self.song_label.place(x=self.song_label_x, y=self.song_label_y)
 
-        self.artist_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 20), text_color="white", anchor="w", bg_color="transparent", fg_color="transparent", height=50, width=480)
+        self.artist_label = ctk.CTkLabel(self.window_player, text="", font=("Arial", 20), text_color="white", anchor=ctk.W, bg_color="transparent", fg_color="transparent", height=50, width=480)
         self.artist_label.place(x=self.artist_label_x, y=self.artist_label_y)
 
         # Song timer
-        self.song_time_played = ctk.CTkLabel(self.window_player, text="", font=("Arial", 10, "bold"), text_color="white", anchor="w", bg_color="transparent", fg_color="transparent")
+        self.song_time_played = ctk.CTkLabel(self.window_player, text="", font=("Arial", 10, "bold"), text_color="white", anchor="w", bg_color="transparent", fg_color="transparent",height=20,width=15)
         self.song_time_played.place(x=self.song_time_played_x, y=self.song_time_played_y)
 
-        self.song_time_total = ctk.CTkLabel(self.window_player, text="", font=("Arial", 10, "bold"), text_color="white", anchor="w", bg_color="transparent", fg_color="transparent")
+        self.song_time_total = ctk.CTkLabel(self.window_player, text="", font=("Arial", 10, "bold"), text_color="white", anchor="w", bg_color="transparent", fg_color="transparent",height=20,width=15)
         self.song_time_total.place(x=self.song_time_total_x, y=self.song_time_total_y)
 
         # Clock and date
-        self.clock = ctk.CTkLabel(self.window_player, text="", font=("Arial", 15, "bold"), text_color="white", bg_color="transparent")
+        self.clock = ctk.CTkLabel(self.window_player, text="", font=("Arial", 15, "bold"), text_color="white", bg_color="transparent",height=20,width=15)
         self.clock.place(x=self.clock_x, y=self.clock_y)
 
-        self.date = ctk.CTkLabel(self.window_player, text="", font=("Arial", 15, "bold"), text_color="white", bg_color="transparent")
+        self.date = ctk.CTkLabel(self.window_player, text="", font=("Arial", 15, "bold"), text_color="white", bg_color="transparent",height=20,width=15)    
         self.date.place(x=self.date_x, y=self.date_y)
 
         # Button setup
@@ -571,48 +621,57 @@ class SpotifyAppGUI:
         blank = ctk.CTkImage(Image.new('RGBA', (100, 100), (255, 0, 0, 0)))
         self.progressbar_x_lable.configure(text=f'X: {app_settings["ProgressbarX"]}')
         self.progressbar_y_lable.configure(text=f'Y: {app_settings["ProgressbarY"]}')
+        if app_settings["background"] == "Minimalistic" or app_settings["background"] == "Minimalistic with contrast":
+            self.artist_label.configure(image="")
+            self.song_label.configure(image="")
+            self.song_time_played.configure(image="")
+            self.song_time_total.configure(image="")
+            self.date.configure(image="")
+            self.clock.configure(image="")
 
         if app_settings["background"] == "Minimalistic with contrast":
             mean_color = getting_mean_color.get_mean_color_from_center(self.album_art, 1, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
             self.background_cover_art_label.configure(image=blank)
-            self.artist_label.configure(image="")
-            self.song_label.configure(image="")
             self.window_player.configure(fg_color=mean_color)
             
         elif app_settings["background"] == "Minimalistic":
             mean_color = getting_mean_color.get_mean_color_from_center(self.album_art, 2, app_settings["brightness_factor"],app_settings["red_factor"], app_settings["green_factor"], app_settings["blue_factor"])
             self.background_cover_art_label.configure(image=blank)
-            self.artist_label.configure(image="")
-            self.song_label.configure(image="")
             self.window_player.configure(fg_color=mean_color)
 
         elif app_settings["background"] == "Cover art":
             self.background_cover_art_label.configure(image=self.background_album_image)
-            self.artist_label.configure(image=self.background_album_image_artist_crop)
-            self.song_label.configure(image=self.background_album_image_song_crop)
             self.window_player.configure(fg_color="gray")
+            if self.background_album_image != None:
+                self.crop_background_album_image(self.artist_label)
+                self.crop_background_album_image(self.song_label)
+                self.crop_background_album_image(self.song_time_played)
+                self.crop_background_album_image(self.song_time_total)
+                self.crop_background_album_image(self.date)
+                self.crop_background_album_image(self.clock)
+        
 
 
             
         if app_settings["datetime"] == "No time or date":
-            self.date.place(x=1000,y=460)
-            self.clock.place(x=1000,y=440)
+            self.date.place_forget()
+            self.clock.place_forget()
             
         elif app_settings["datetime"] == "Date":
             self.date.configure(text=f"{self.current_time.month:02}/{self.current_time.day:02}  ")
-            self.date.place(x=762,y=460)
-            self.clock.place(x=1000,y=440)
-            
+            self.date.place(x=self.date_x,y=self.date_y)
+            self.clock.place_forget()
+
         elif app_settings["datetime"] == "Time":
             self.clock.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02}  ")
-            self.clock.place(x=762,y=440)
-            self.date.place(x=1000,y=460)
+            self.clock.place(x=self.clock_x,y=self.clock_y)
+            self.date.place_forget()
             
         elif app_settings["datetime"] == "Date and time":
             self.date.configure(text=f"{self.current_time.month:02}/{self.current_time.day:02}  ")
-            self.date.place(x=762,y=460)
+            self.date.place(x=self.date_x,y=self.date_y)
             self.clock.configure(text=f"{self.current_time.hour:02}:{self.current_time.minute:02}  ")
-            self.clock.place(x=762,y=440)
+            self.clock.place(x=self.clock_x,y=self.clock_y)
 
         if app_settings["ButtonPreference"] == "Clean":
             self.previous_track_button.place_forget()  # If the button was placed with place()
@@ -627,7 +686,6 @@ class SpotifyAppGUI:
         self.song_time_played.place(x=app_settings["ProgressbarX"], y=app_settings["ProgressbarY"])
         self.song_time_total.place(x=app_settings["ProgressbarX"]+400, y=app_settings["ProgressbarY"])
         self.progress_bar_slider.place(x=app_settings["ProgressbarX"]+30, y=app_settings["ProgressbarY"]+10)
-
             
         #Chance to toggle progress bar on and off work in progress
         
@@ -642,7 +700,8 @@ class SpotifyAppGUI:
             self.song_time_played.place(x=307, y=220)
             self.song_time_total.place(x=700, y=220)
 
-            
+        self.song_label.tkraise()
+        self.cover_art_label.tkraise()
     
 
     def show_frame(self, frame:ctk.CTkFrame):
@@ -691,18 +750,17 @@ class SpotifyAppGUI:
                         self.song_time_total.configure(text=f"{duration_ms//60000}:{int((duration_ms%60000)/1000):02}")
                         self.background_album_art_darker = ImageEnhance.Brightness(self.album_art).enhance(0.7)
                         self.background_album_image = ctk.CTkImage(self.background_album_art_darker, size=self.background_cover_art_size)
-                        self.crop_background_album_image()
                         self.user_specific_setup(app_settings.settings)
+                        self.cover_art_label.configure(image=self.current_song_info["album_art"])
                 except Exception as e:
                     print(f"updating display: {e}")
                 self.song_label.configure(text=self.current_playback["item"]["name"])
                 self.artist_label.configure(text=artists)
-                self.cover_art_label.configure(image=self.current_song_info["album_art"])
                 progress_ms = self.current_playback['progress_ms']
                 self.song_time_played.configure(text=f"{progress_ms//60000}:{int((progress_ms%60000)/1000):02}")
                 self.progress_bar_slider.set(progress_ms)
             else:
-                self.song_label.configure(text="No song playing.")
+                self.song_label.configure(text="          No song playing.")
                 self.artist_label.configure(text="")
         except Exception as e:
             print(f"Error updating display: {e}")
